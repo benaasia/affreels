@@ -21,7 +21,7 @@ Hệ thống hỗ trợ chuyển đổi link Shopee thường thành link Affili
 ### Cài đặt nhanh
 
 ```bash
-git clone https://github.com/user/affreels.git .
+git clone https://github.com/benaasia/affreels.git .
 ```
 
 ## 🔒 Bảo mật
