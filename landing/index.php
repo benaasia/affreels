@@ -1,7 +1,7 @@
 <?php
 // --- CẤU HÌNH SERVER CHÍNH (Dùng khi nằm khác server) ---
 // Thay đổi thành URL Admin của khách hàng nếu tách riêng server
-$main_server_url = "http://localhost"; 
+$main_server_url = "https://affreel.com"; 
 
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $landing_url = $protocol . "://" . $_SERVER['HTTP_HOST'];
