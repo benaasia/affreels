@@ -1,9 +1,4 @@
 <?php
-/**
- * Remote API Helper for FbReels Pro - Client Version
- * Dàn xếp mọi yêu cầu qua Server trung tâm.
- */
-
 function callRemoteAPI($endpoint, $data = []) {
     global $remote_api_key, $remote_api_url;
 
@@ -45,9 +40,6 @@ function callRemoteAPI($endpoint, $data = []) {
     return $result;
 }
 
-/**
- * BUỘC trích xuất link Shopee qua API
- */
 function smartExtractShopeeLink($input, $is_html = false) {
     return callRemoteAPI('extract', [
         'input' => $input,
@@ -55,9 +47,6 @@ function smartExtractShopeeLink($input, $is_html = false) {
     ]);
 }
 
-/**
- * BUỘC lấy URL cuối cùng qua API
- */
 function smartGetFinalUrl($url) {
     $result = callRemoteAPI('expand', ['url' => $url]);
     if (isset($result['success']) && $result['success']) {
@@ -68,11 +57,7 @@ function smartGetFinalUrl($url) {
     }
 }
 
-/**
- * BUỘC Facebook Scrape qua API
- */
 function smartFacebookScrape($url) {
-    // Lấy Token riêng của Client từ DB cục bộ nếu có
     $client_fb_token = '';
     try {
         $db_local = new PDO("sqlite:" . __DIR__ . "/links.db");
@@ -84,6 +69,6 @@ function smartFacebookScrape($url) {
 
     return callRemoteAPI('scrape', [
         'url' => $url,
-        'fb_access_token' => $client_fb_token // Gửi token này lên Server
+        'fb_access_token' => $client_fb_token
     ]);
 }

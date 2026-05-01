@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 
 :root {
-    /* Light Mode (Default) */
     --bg-color: #f5f5f5;
     --card-bg: #ffffff;
     --border-color: #e8e8e8;
@@ -96,7 +95,6 @@ body:not(.dark-mode) .theme-icon::after {
     font-style: normal;
 }
 
-/* Ẩn nội dung gốc của span để dùng pseudo-element */
 .theme-icon {
     font-size: 0;
 }
@@ -133,7 +131,6 @@ body.dark-mode .extractor-card {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Tabs System */
 .tabs {
     display: flex;
     gap: 0.5rem;
@@ -215,7 +212,6 @@ button[id^="paste-"]:active {
     transform: translateY(0);
 }
 
-/* Bookmarklet Setup */
 .bookmarklet-setup {
     text-align: center;
     padding: 1rem;
@@ -238,7 +234,6 @@ button[id^="paste-"]:active {
     transform: scale(1.05) translateY(-3px);
 }
 
-/* Setup Grid Layout */
 .setup-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -254,7 +249,6 @@ button[id^="paste-"]:active {
     padding: 0.5rem;
 }
 
-/* Desktop Divider */
 @media (min-width: 601px) {
     .setup-item:first-child {
         border-right: 1px dashed var(--border-color);
@@ -360,7 +354,6 @@ button#extract-btn:hover {
     box-shadow: 0 5px 15px var(--primary-glow);
 }
 
-/* Fallback Styling */
 .fallback-section {
     text-align: center;
     margin-top: 1.5rem;
@@ -558,14 +551,12 @@ body.dark-mode .result-card {
     }
 }
 
-/* Auto-processing state */
 .auto-processing .tabs,
 .auto-processing #auto-tab,
 .auto-processing #extract-btn {
     display: none !important;
 }
 
-/* Responsive Fixes */
 @media (max-width: 600px) {
     .container {
         padding: 1rem 0.5rem;
@@ -599,10 +590,6 @@ body.dark-mode .result-card {
     }
 }
 
-/* ======================================================
-   ADMIN PANEL - Premium SaaS Dashboard
-   ====================================================== */
-
 .admin-body {
     display: block;
     min-height: 100vh;
@@ -612,7 +599,6 @@ body.dark-mode .result-card {
         radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.08) 0%, transparent 30%);
 }
 
-/* ---- LOGIN SCREEN ---- */
 .admin-login-wrapper {
     display: flex;
     justify-content: center;
@@ -641,7 +627,6 @@ body.dark-mode .result-card {
 }
 
 @keyframes pulse {
-
     0%,
     100% {
         transform: scale(1);
@@ -760,7 +745,6 @@ body.dark-mode .result-card {
     color: var(--primary);
 }
 
-/* ---- TOP NAVIGATION BAR ---- */
 .admin-topbar {
     display: flex;
     justify-content: space-between;
@@ -839,12 +823,10 @@ body.dark-mode .result-card {
     background: rgba(239, 68, 68, 0.1);
 }
 
-/* ---- DASHBOARD CONTENT ---- */
 .admin-dashboard {
     animation: fadeInUp 0.5s ease-out;
 }
 
-/* ---- STATS GRID ---- */
 .admin-stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -898,7 +880,6 @@ body.dark-mode .result-card {
     margin-top: 0.3rem;
 }
 
-/* ---- TOOLBAR ---- */
 .admin-toolbar {
     display: flex;
     justify-content: space-between;
@@ -917,14 +898,22 @@ body.dark-mode .result-card {
 
 .admin-search-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 0.7rem 1rem 0.7rem 2.5rem;
-    color: white;
-    font-size: 0.85rem;
-    outline: none;
+    background-color: #1a1a2e !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    padding: 0.7rem 1rem 0.7rem 2.5rem !important;
+    color: white !important;
+    font-size: 0.85rem !important;
+    outline: none !important;
     transition: all 0.3s ease;
+}
+
+.admin-search-input:-webkit-autofill,
+.admin-search-input:-webkit-autofill:hover, 
+.admin-search-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: white !important;
+    -webkit-box-shadow: 0 0 0px 1000px #1a1a2e inset !important;
+    transition: background-color 5000s ease-in-out 0s;
 }
 
 .admin-search-icon {
@@ -992,7 +981,6 @@ body.dark-mode .result-card {
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
-/* ---- TABLE ---- */
 .admin-table-wrapper {
     padding: 0 2rem 2rem;
 }
@@ -1162,7 +1150,6 @@ body.dark-mode .result-card {
     font-size: 0.8rem;
 }
 
-/* ---- EMPTY STATE ---- */
 .admin-empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -1174,7 +1161,6 @@ body.dark-mode .result-card {
     margin-bottom: 1rem;
 }
 
-/* ---- MODAL ---- */
 .admin-modal-overlay {
     position: fixed;
     inset: 0;
@@ -1296,7 +1282,6 @@ body.dark-mode .result-card {
     transform: translateY(-1px);
 }
 
-/* ---- TOAST NOTIFICATION ---- */
 .admin-toast {
     position: fixed;
     bottom: 2rem;
@@ -1326,7 +1311,6 @@ body.dark-mode .result-card {
     color: #fca5a5;
 }
 
-/* ---- ADMIN RESPONSIVE ---- */
 @media (max-width: 768px) {
     .admin-stats-grid {
         grid-template-columns: 1fr;
@@ -1385,7 +1369,6 @@ body.dark-mode .result-card {
     }
 }
 
-/* ---- SETTINGS PANELS (Domain / Password) ---- */
 .admin-settings-panel {
     padding: 0 2rem;
     animation: fadeIn 0.3s ease-out;
@@ -1439,7 +1422,7 @@ body.dark-mode .result-card {
 }
 
 .admin-settings-input:focus {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 1);
     color: white;
     border-color: var(--primary);
     box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
@@ -1480,7 +1463,6 @@ body.dark-mode .result-card {
     line-height: 1.5;
 }
 
-/* Password form */
 .admin-pw-form {
     display: flex;
     flex-direction: column;
@@ -1492,7 +1474,6 @@ body.dark-mode .result-card {
     margin-top: 0.3rem;
 }
 
-/* ---- SOURCE LINK COLUMN ---- */
 .admin-source-link {
     color: #60a5fa;
     text-decoration: none;
@@ -1510,7 +1491,6 @@ body.dark-mode .result-card {
     font-size: 0.8rem;
 }
 
-/* ---- NAV BUTTON STYLE ---- */
 .admin-topbar-right button.admin-nav-link {
     background: transparent;
     border: none;
@@ -1524,7 +1504,6 @@ body.dark-mode .result-card {
     border-radius: 8px;
 }
 
-/* ---- SETTINGS PAGE ---- */
 .admin-page-content {
     padding: 1.5rem 2rem;
     width: 100%;
@@ -1564,14 +1543,6 @@ body.dark-mode .result-card {
     font-size: 0.82rem;
     margin-bottom: 1.2rem;
     line-height: 1.6;
-}
-
-.admin-settings-desc code {
-    background: rgba(99, 102, 241, 0.15);
-    color: #a5b4fc;
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
 }
 
 .admin-settings-row {
@@ -1686,7 +1657,6 @@ body.dark-mode .result-card {
     color: var(--text-dim);
 }
 
-/* ---- PAGINATION ---- */
 .admin-pagination {
     display: flex;
     align-items: center;
@@ -1736,7 +1706,6 @@ body.dark-mode .result-card {
     margin-left: 0.8rem;
 }
 
-/* ---- Settings Responsive ---- */
 @media (max-width: 768px) {
     .admin-page-content {
         padding: 1rem;
@@ -1767,7 +1736,6 @@ body.dark-mode .result-card {
     }
 }
 
-/* ---- Optimized Result Note ---- */
 .result-note {
     font-size: 0.75rem;
     color: #94a3b8;
@@ -1832,7 +1800,7 @@ body.dark-mode .result-card {
 .magic-link-btn:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6);
-    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
 }
 
 .magic-link-btn:active {
@@ -1845,7 +1813,6 @@ body.dark-mode .result-card {
     filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }
 
-/* Pulsing glow animation */
 @keyframes magic-pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
@@ -1864,7 +1831,6 @@ body.dark-mode .result-card {
     animation: magic-pulse 2s infinite;
 }
 
-/* ---- EXTENSION INSTALL BUTTON ---- */
 .ext-install-btn {
     display: inline-flex;
     align-items: center;
@@ -1886,14 +1852,13 @@ body.dark-mode .result-card {
 .ext-install-btn:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
-    background: linear-gradient(135deg, #166fe5 0%, #2563eb 50%, #3b82f6 100%);
+    background: linear-gradient(135deg, #166fe5 0%, #2563eb 100%);
 }
 
 .ext-install-btn:active {
     transform: translateY(-1px) scale(0.98);
 }
 
-/* Adjustments for Setup Grid */
 .setup-item .ext-install-btn,
 .setup-item .magic-link-btn {
     width: 100%;
@@ -1924,7 +1889,6 @@ body.dark-mode .result-card {
     text-transform: uppercase;
 }
 
-/* ---- PREMIUM EXTRACTOR BUTTON ---- */
 #extract-btn,
 .extractor-btn {
     width: 100%;
@@ -1958,7 +1922,6 @@ body.dark-mode .result-card {
     transform: scale(0.98);
 }
 
-/* ---- BETA MODAL STYLES ---- */
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -1968,7 +1931,6 @@ body.dark-mode .result-card {
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
     display: none;
-    /* Controlled by JS */
     align-items: center;
     justify-content: center;
     z-index: 9999;
@@ -2056,9 +2018,6 @@ body.dark-mode .result-card {
     box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
 }
 
-/* ======================================================
-   RESPONSIVE OPTIMIZATION
-   ====================================================== */
 @media (max-width: 992px) {
     .admin-main { padding: 1rem !important; }
     .admin-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -2076,14 +2035,8 @@ body.dark-mode .result-card {
     }
     
     .admin-table { min-width: 700px; }
-    
-    /* Settings Form */
     .settings-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
-    
-    /* Stats Numbers */
     .admin-stat-number { font-size: 1.5rem !important; }
-    
-    /* Branding Form */
     .branding-form-grid { grid-template-columns: 1fr !important; }
 }
 

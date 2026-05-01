@@ -1,17 +1,11 @@
 <?php
-/**
- * Settings Page for FbReels Pro
- * Allows customers to configure their Remote API Key.
- */
 
-// Đưa logic xử lý DB vào đây hoặc include từ index.php
 define('DB_FILE', 'links.db');
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Tạo bảng settings nếu chưa có
     $db->exec("CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
         value TEXT DEFAULT ''
@@ -36,12 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Lấy cấu hình hiện tại
 $stmt_settings = $db->query("SELECT * FROM settings");
 $settings = $stmt_settings->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $current_key = isset($settings['remote_api_key']) ? $settings['remote_api_key'] : 'FREE-85C45DDDBF3CEADB';
-$current_url = 'https://app.affreel.com/v1'; // Fix cứng URL Server API
+$current_url = 'https://app.affreel.com/v1';
 
 ?>
 <!DOCTYPE html>
@@ -159,17 +152,16 @@ $current_url = 'https://app.affreel.com/v1'; // Fix cứng URL Server API
             <form method="POST">
                 <div class="form-group">
                     <label for="remote_api_key">API Key (Được cấp miễn phí bởi AffReel.com)</label>
-                    <input type="text" id="remote_api_key" name="remote_api_key" class="form-control" value="<?php echo htmlspecialchars($current_key); ?>" placeholder="Dán API Key của bạn vào đây...">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="remote_api_key" name="remote_api_key" class="form-control" value="<?php echo htmlspecialchars($current_key); ?>" placeholder="Dán API Key của bạn vào đây...">
+                        <button type="submit" class="btn-submit" style="width: auto; white-space: nowrap; padding: 0 25px;">
+                            <i class="fas fa-save"></i> Lưu
+                        </button>
+                    </div>
                     <small style="display: block; margin-top: 8px; font-size: 0.8rem;">
                         <i class="fab fa-telegram" style="color: #0088cc;"></i> Chưa có Key? <a href="https://t.me/shortlinkone" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Lấy API miễn phí tại đây</a>
                     </small>
                 </div>
-
-
-
-                <button type="submit" class="btn-submit">
-                    <i class="fas fa-save"></i> Lưu cấu hình
-                </button>
             </form>
 
             <div class="donate-section">
@@ -187,7 +179,6 @@ $current_url = 'https://app.affreel.com/v1'; // Fix cứng URL Server API
     </div>
 
     <script>
-        // Tự động nhận diện dark mode từ localStorage nếu index.php có lưu
         if (localStorage.getItem('theme') === 'light') {
             document.body.classList.remove('dark-mode');
         }

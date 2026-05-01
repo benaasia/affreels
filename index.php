@@ -1,25 +1,15 @@
 <?php
-/**
- * ReelsLink Pro V6.5
- */
 
-// Cấu hình bảo mật và Database
-define('LOCAL_API_KEY', 'ReelsLink-v4-Secure-Key-2026'); // Key cho Extension/Bookmarklet gọi vào dashboard này
+define('LOCAL_API_KEY', 'ReelsLink-v4-Secure-Key-2026');
 define('DB_FILE', 'links.db');
 
-// Cấu hình Remote API (Dành cho bản thương mại bán code)
-// Mặc định chạy Local. Nếu có REMOTE_API_KEY thì sẽ gọi về Server trung tâm của bạn.
 $remote_api_key = ''; 
 $remote_api_url = ''; 
 
-
-
 try {
-    // Khởi tạo kết nối SQLite
     $db = new PDO("sqlite:" . DB_FILE);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Tạo bảng nếu chưa tồn tại
     $db->exec("CREATE TABLE IF NOT EXISTS links (
         slug TEXT PRIMARY KEY,
         url TEXT NOT NULL,
@@ -29,7 +19,6 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // Tạo bảng khảo sát gỡ cài đặt
     $db->exec("CREATE TABLE IF NOT EXISTS surveys (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         reason TEXT,
@@ -38,7 +27,6 @@ try {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // Migration: Kiểm tra và thêm cột nếu đang ở version cũ
     $check_column = $db->query("PRAGMA table_info(links)")->fetchAll(PDO::FETCH_ASSOC);
     $col_names = array_column($check_column, 'name');
     if (!in_array('clicks', $col_names)) {
@@ -51,13 +39,11 @@ try {
         $db->exec("ALTER TABLE links ADD COLUMN affiliate_id TEXT DEFAULT ''");
     }
 
-    // Tạo bảng settings nếu chưa có
     $db->exec("CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
         value TEXT DEFAULT ''
     )");
 
-    // Tự động di chuyển dữ liệu từ JSON sang SQLite (Chỉ chạy 1 lần)
     $json_file = 'links.json';
     if (file_exists($json_file)) {
         $json_data = json_decode(file_get_contents($json_file), true);
@@ -69,20 +55,17 @@ try {
             rename($json_file, 'links.json.bak');
         }
     }
-    // Lấy cấu hình từ bảng settings
     $stmt_settings = $db->query("SELECT * FROM settings");
     $settings = $stmt_settings->fetchAll(PDO::FETCH_KEY_PAIR);
     
     $remote_api_key = isset($settings['remote_api_key']) ? trim($settings['remote_api_key']) : 'FREE-85C45DDDBF3CEADB';
-    $remote_api_url = 'https://app.affreel.com/v1'; // Fix cứng URL Server API
+    $remote_api_url = 'https://app.affreel.com/v1';
 
-    // CHUYỂN HƯỚNG NẾU CHƯA CÓ API KEY
     if (empty($remote_api_key) && $_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['action'])) {
         header('Location: settings.php');
         exit;
     }
 
-    // Lấy cấu hình Branding
     $site_title = isset($settings['site_title']) ? $settings['site_title'] : 'FbReels Pro';
     $site_desc = isset($settings['site_desc']) ? $settings['site_desc'] : 'Hỗ trợ chuyển đổi link Shopee Affiliate và lấy nhanh link từ Fb Reels.';
     $site_keywords = isset($settings['site_keywords']) ? $settings['site_keywords'] : 'shopee affiliate, fb reels, rút gọn link';
@@ -94,13 +77,10 @@ try {
     die("Database Error: " . $e->getMessage());
 }
 
-define('API_KEY', LOCAL_API_KEY); // Giữ nguyên alias để các thành phần khác không lỗi
+define('API_KEY', LOCAL_API_KEY);
 
 require_once __DIR__ . '/remote_api_helper.php';
 
-
-
-// Xử lý Facebook Scrape riêng lẻ (AJAX từ Frontend)
 if (isset($_GET['action']) && $_GET['action'] === 'scrape' && isset($_GET['url'])) {
     require_once __DIR__ . '/fb_helper.php';
     smartFacebookScrape($_GET['url']);
@@ -109,7 +89,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'scrape' && isset($_GET['url']
     exit;
 }
 
-// Xử lý POST (API & AJAX)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     $received_key = isset($_POST['api_key']) ? $_POST['api_key'] : '';
     if (empty($received_key)) {
@@ -143,13 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
     if (!empty($shopee_input)) {
         $full_url = smartGetFinalUrl($shopee_input);
         
-        // Nếu API trả về lỗi (Ví dụ: Key bị chặn)
         if (strpos($full_url, 'ERROR: ') === 0) {
             echo json_encode(['success' => false, 'message' => substr($full_url, 7)]);
             exit;
         }
 
-        // Kiểm tra nếu link vẫn là link rút gọn (chưa expand thành công)
         $is_short = (stripos($full_url, 's.shopee.vn') !== false || stripos($full_url, 'shp.ee') !== false || stripos($full_url, 'shope.ee') !== false);
         if ($is_short && stripos($full_url, 'origin_link') === false) {
              $full_url = smartGetFinalUrl($full_url);
@@ -163,18 +140,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
         $clean_url = $full_url;
 
         if (!empty($provided_aff_id)) {
-            // Logic khi có ID cung cấp: Dùng link sạch (Origin)
             $aff_id = $provided_aff_id;
             $clean_url = strtok($full_url, '?');
             $redir_link = "https://s.shopee.vn/an_redir?origin_link=" . urlencode($clean_url) . "&sm=fb_partner&affiliate_id=" . $aff_id . "&content_source=fb&channel_type=fb&content_type=REELS";
         } else {
-            // Logic cũ: Trích xuất Affiliate ID từ link đầy đủ
-            if (preg_match('/(?:an_|affiliate_id=|aff_id=)([a-zA-Z0-9_-]+)/i', urldecode($full_url), $matches)) {
+            if (preg_match('/(?:affiliate_id=|aff_id=)([a-zA-Z0-9_-]+)/i', urldecode($full_url), $matches)) {
                 $aff_id = $matches[1];
+            } else if (preg_match('/an_([a-zA-Z0-9_-]+)/i', urldecode($full_url), $matches)) {
+                if ($matches[1] !== 'redir') {
+                    $aff_id = $matches[1];
+                }
             }
             $clean_url = strtok($full_url, '?');
             $redir_link = "https://s.shopee.vn/an_redir?origin_link=" . urlencode($full_url) . "&sm=fb_partner&affiliate_id=" . $aff_id . "&content_source=fb&channel_type=fb&content_type=REELS";
         }
+        
+        $explicit_source = isset($_POST['source_url']) ? trim($_POST['source_url']) : $shopee_input;
         
         $result = [
             'success' => true,
@@ -184,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
             'affiliate_id' => $aff_id
         ];
         
-        $short_link = generateShortLink($redir_link, $db, $shopee_input, $aff_id);
+        $short_link = generateShortLink($redir_link, $db, $explicit_source, $aff_id);
         $result['short_link'] = $short_link;
         
         echo json_encode($result);
@@ -215,10 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
     }
 
     if ($result['success']) {
-        // Ưu tiên source_url gửi rõ ràng từ bookmarklet/extension
         $explicit_source = isset($_POST['source_url']) ? trim($_POST['source_url']) : '';
         if (empty($explicit_source)) {
-            // Fallback: nếu input gốc là link FB/ngoài thì dùng nó làm source
             $decoded_input = rawurldecode(urldecode($raw_input));
             $contains_shopee = (stripos($decoded_input, 'shopee.vn') !== false
                 || stripos($decoded_input, 'shp.ee') !== false
@@ -231,9 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
     exit;
 }
 
-/**
- * Hàm tạo link rút gọn cục bộ tại Client (Sau khi đã có kết quả từ API)
- */
 function generateShortLink($longUrl, $db, $sourceUrl = '', $affId = '') {
     $stmt = $db->prepare("SELECT slug FROM links WHERE url = ? LIMIT 1");
     $stmt->execute([$longUrl]);
@@ -273,31 +249,29 @@ function generateShortLink($longUrl, $db, $sourceUrl = '', $affId = '') {
 $auto_link = isset($_GET['extract']) ? $_GET['extract'] : '';
 $auto_source = isset($_GET['source']) ? $_GET['source'] : '';
 
-// Cấu hình URL hiện tại
+$is_shopee_link = (stripos($auto_link, 'shopee.vn') !== false || stripos($auto_link, 'shp.ee') !== false || stripos($auto_link, 'shope.ee') !== false);
+$auto_shopee = $is_shopee_link ? $auto_link : '';
+$auto_reels = $is_shopee_link ? '' : $auto_link;
+
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'];
 
-// Lấy cấu hình từ database cha
 $site_title = 'FbReels Pro';
 $site_desc = 'Hỗ trợ chuyển đổi link Shopee Affiliate và lấy nhanh link từ Fb Reels.';
 $site_keywords = 'shopee affiliate, fb reels, rút gọn link';
 $site_author = 'ReelsLink';
-$site_logo = '../image/favicon.png';
-$site_favicon = '../image/favicon.png';
+$site_logo = 'image/favicon.png';
+$site_favicon = 'image/favicon.png';
 
 try {
-    $db_path = __DIR__ . '/../links.db';
-    if (file_exists($db_path)) {
-        $db_tmp = new PDO("sqlite:" . $db_path);
-        $stmt_tmp = $db_tmp->query("SELECT key, value FROM settings");
-        $settings_tmp = $stmt_tmp->fetchAll(PDO::FETCH_KEY_PAIR);
-        if (isset($settings_tmp['site_title'])) $site_title = $settings_tmp['site_title'];
-        if (isset($settings_tmp['site_desc'])) $site_desc = $settings_tmp['site_desc'];
-        if (isset($settings_tmp['site_keywords'])) $site_keywords = $settings_tmp['site_keywords'];
-        if (isset($settings_tmp['site_author'])) $site_author = $settings_tmp['site_author'];
-        if (isset($settings_tmp['site_logo'])) $site_logo = '../' . $settings_tmp['site_logo'];
-        if (isset($settings_tmp['site_favicon'])) $site_favicon = '../' . $settings_tmp['site_favicon'];
-    }
+    $stmt_tmp = $db->query("SELECT key, value FROM settings");
+    $settings_tmp = $stmt_tmp->fetchAll(PDO::FETCH_KEY_PAIR);
+    if (isset($settings_tmp['site_title'])) $site_title = $settings_tmp['site_title'];
+    if (isset($settings_tmp['site_desc'])) $site_desc = $settings_tmp['site_desc'];
+    if (isset($settings_tmp['site_keywords'])) $site_keywords = $settings_tmp['site_keywords'];
+    if (isset($settings_tmp['site_author'])) $site_author = $settings_tmp['site_author'];
+    if (isset($settings_tmp['site_logo'])) $site_logo = $settings_tmp['site_logo'];
+    if (isset($settings_tmp['site_favicon'])) $site_favicon = $settings_tmp['site_favicon'];
 } catch (Exception $e) {}
 ?>
 <!DOCTYPE html>
@@ -310,24 +284,18 @@ try {
     <meta name="keywords" content="<?php echo htmlspecialchars($site_keywords); ?>">
     <meta name="author" content="<?php echo htmlspecialchars($site_author); ?>">
     <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($site_favicon); ?>">
-    
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XX8CW4JJHN"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-XX8CW4JJHN');
     </script>
-    
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?php echo $base_url; ?>">
     <meta property="og:title" content="<?php echo htmlspecialchars($site_title); ?>">
     <meta property="og:description" content="<?php echo htmlspecialchars($site_desc); ?>">
     <meta property="og:image" content="<?php echo $base_url; ?>/image/og.jpg">
-
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>const REELSLINK_API_KEY = "<?php echo API_KEY; ?>";</script>
@@ -339,7 +307,7 @@ try {
                 <span class="theme-icon">🌙</span>
             </button>
             <h1 style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-                <a href="../index.php" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: var(--primary);">
+                <a href="index.php" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: var(--primary);">
                     <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo" style="width: 48px; height: 48px; border-radius: 50%;"> 
                     <span><?php echo htmlspecialchars($site_title); ?></span>
                 </a>
@@ -375,15 +343,14 @@ try {
                     </div>
                 </div>
 
-                <div class="input-group" style="position: relative;">
-                    <textarea id="shopee-url" rows="2" placeholder="Dán link Shopee vào đây..." style="width: 100%; padding: 12px 15px 35px 15px; border-radius: 16px; resize: none; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-main); font-size: 0.95rem; line-height: 1.5;"></textarea>
+                <div id="shopee-url-group" class="input-group" style="position: relative;">
+                    <textarea id="shopee-url" rows="2" placeholder="Dán link Shopee vào đây..." style="width: 100%; padding: 12px 15px 35px 15px; border-radius: 16px; resize: none; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-main); font-size: 0.95rem; line-height: 1.5;"><?php echo htmlspecialchars($auto_shopee); ?></textarea>
                     <button type="button" id="paste-shopee-url-btn" style="position: absolute; bottom: 12px; right: 12px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
                         <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
                         Dán link
                     </button>
                 </div>
 
-                <!-- Link Chia Sẻ (Hiện sau khi có ID) -->
                 <div id="share-link-group" class="input-group" style="display: none; background: rgba(236, 72, 153, 0.05); border: 1px dashed var(--secondary); padding: 12px; border-radius: 14px; margin-top: 1rem;">
                     <div style="font-size: 0.75rem; color: var(--secondary); font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Link chia sẻ (đã kèm ID):</div>
                     <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 8px;">💡 Chia sẻ link này cho bạn bè để chuyển đổi link Shopee!</div>
@@ -396,8 +363,8 @@ try {
             </div>
 
             <div id="fbreel-tab" class="tab-content">
-                <div class="input-group" style="position: relative;">
-                    <textarea id="reels-url" rows="2" placeholder="Dán link Reels URL vào đây..." style="width: 100%; padding: 12px 15px 35px 15px; border-radius: 16px; resize: none; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-main); font-size: 0.95rem; line-height: 1.5;"><?php echo htmlspecialchars($auto_link); ?></textarea>
+                <div id="reels-url-group" class="input-group" style="position: relative;">
+                    <textarea id="reels-url" rows="2" placeholder="Dán link Reels URL vào đây..." style="width: 100%; padding: 12px 15px 35px 15px; border-radius: 16px; resize: none; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-main); font-size: 0.95rem; line-height: 1.5;"><?php echo htmlspecialchars($auto_reels); ?></textarea>
                     <button type="button" id="paste-reels-url-btn" style="position: absolute; bottom: 12px; right: 12px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
                         <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
                         Dán link
@@ -409,7 +376,6 @@ try {
             <div id="setup-tab" class="tab-content">
                 <div class="bookmarklet-setup" style="text-align:center;">
                     <div class="setup-grid">
-                        <!-- Cách 1: Extension -->
                         <div class="setup-item">
                             <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">
                                 Cách 1: Extension (Khuyên dùng)
@@ -420,7 +386,6 @@ try {
                             <p style="font-size:0.8rem; color:#60a5fa; margin-top:0.8rem; font-weight:600;">💻 Lấy link 1-Click trên FB máy tính.</p>
                         </div>
 
-                        <!-- Cách 2: Bookmarklet -->
                         <div class="setup-item">
                             <div style="font-size: 0.75rem; font-weight: 700; color: var(--secondary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">
                                 Cách 2: Bookmarklet (Dự phòng)
@@ -428,12 +393,6 @@ try {
                             <a href="bookmarklet_guide.php" class="magic-link-btn mini">
                                 <span class="stars">✨</span> Magic Link V6.5 <span class="stars">✨</span>
                             </a>
-                            <!--
-                            <a href="javascript:(function(){var h=document.documentElement.innerHTML;var m=h.match(/[a-z0-9.\\\%:_\/-]*(?:shopee\.vn|shp\.ee|shope\.ee)[^&quot;\'\s<>|]*/i);if(m){var url='<?php echo $current_page; ?>?extract='+encodeURIComponent(m[0])+'&source='+encodeURIComponent(window.location.href);window.open(url,'_blank');}else{alert('Không tìm thấy link!');}})();" class="magic-link-btn mini">
-                                <span class="stars">✨</span> Magic Link V6.5 <span class="stars">✨</span>
-                            </a>
-                            <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0.8rem;">🖱️ Kéo vào thanh dấu trang.</p>
-                            -->
                             <a href="bookmarklet_guide.php" style="font-size:0.75rem; color:var(--secondary); text-decoration:none; margin-top:0.5rem; font-weight:600;">📖 Xem hướng dẫn chi tiết</a>
                         </div>
                     </div>
@@ -459,13 +418,12 @@ try {
             <div class="status-msg" id="status-msg"></div>
 
             <div id="fallback-section" class="fallback-section" style="display:none;">
-                <p>Bot không thể xem Reel này. Hãy thử <a href="extension_guide.php" target="_blank" style="color: #ff9900; font-weight: 600; text-decoration: none;">cài đặt Extension</a> hoặc kéo <a href="javascript:(function(){var h=document.documentElement.innerHTML;var m=h.match(/[a-z0-9.\\\%:_\/-]*(?:shopee\.vn|shp\.ee|shope\.ee)[^&quot;\'\s<>|]*/i);if(m){var url='<?php echo $current_page; ?>?extract='+encodeURIComponent(m[0])+'&source='+encodeURIComponent(window.location.href);window.open(url,'_blank');}else{alert('Không tìm thấy link!');}})();" class="magic-link-btn mini"><span class="stars">✨</span> Magic Link <span class="stars">✨</span></a> vào thanh dấu trang (<a href="bookmarklet_guide.php" target="_blank" style="color: var(--secondary); text-decoration: none; font-weight: 600;">Xem hướng dẫn</a>) để lấy link tự động nhé.</p>
+                <p>Bot không thể xem Reel này. Hãy thử <a href="extension_guide.php" target="_blank" style="color: #ff9900; font-weight: 600; text-decoration: none;">cài đặt Extension</a> hoặc sử dụng Bookmarklet để lấy link tự động nhé.</p>
                 <a href="#" id="fallback-btn" target="_blank" class="fb-btn">Mở Reel này bằng trình duyệt để sử dụng Bookmarklet hoặc Extension</a>
             </div>
 
             <div class="result-section" id="result-section">
                 <div class="result-card">
-                    <!-- 1. Link mã Voucher độc quyền FB (Chỉ hiện khi là Shopee) -->
                     <div id="shopee-result-details" style="display:none;">
                         <div id="redir-link-section">
                             <div class="result-label">Link mã Voucher độc quyền FB:</div>
@@ -485,7 +443,6 @@ try {
                         </div>
                     </div>
 
-                    <!-- 2. Link rút gọn chính -->
                     <div class="result-label" id="short-link-label" style="margin-top: 1rem">Link rút gọn (có mã Voucher độc quyền FB):</div>
                     <div class="link-row" style="position: relative; display: block;">
                         <div class="link-display" id="short-link-display" style="font-size:1.1rem; color: var(--primary); padding: 8px 12px 38px 12px;"></div>
@@ -501,25 +458,18 @@ try {
                         </div>
                     </div>
 
-                    <!-- Nút toggle xem thêm chi tiết -->
                     <div id="toggle-details-btn" style="display:none; text-align:center; margin-top: 0.8rem;">
                         <button type="button" onclick="toggleLinkDetails()" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-dim); padding: 6px 16px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; transition: all 0.3s;">
                             ▼ Xem thêm chi tiết link
                         </button>
                     </div>
 
-                    <!-- Chi tiết link (ẩn mặc định) -->
                     <div id="link-details-section" style="display:none;">
                         <div id="clean-link-section">
-                            <div class="result-label" style="margin-top: 1rem">Link sạch (Origin) <span style="font-weight: normal; font-size: 0.7rem; color: var(--text-dim);">(Link gốc - Không có ID Affiliate, không có hoa hồng)</span>:</div>
+                            <div class="result-label" style="margin-top: 1rem">Link sạch (Origin) <span style="font-weight: normal; font-size: 0.7rem; color: var(--text-dim);">(Link gốc - Không có ID Affiliate)</span>:</div>
                             <div class="link-row" style="position: relative; display: block;">
                                 <div class="link-display" id="clean-link-display" style="font-size:0.7rem; color:var(--secondary); padding: 6px 10px 35px 10px;"></div>
                                 <div style="position: absolute; right: 6px; bottom: 6px; display: flex; gap: 6px;">
-                                    <!--
-                                    <button class="copy-icon-btn buy-btn" id="buy-clean-btn" title="Mở link mua hàng" style="width: auto; height: 26px; padding: 0 8px; font-size: 0.65rem; display: flex; align-items: center; gap: 3px; border-radius: 5px; background: rgba(238, 77, 45, 0.1); border-color: rgba(238, 77, 45, 0.2); color: #ee4d2d;">
-                                        <span>🛒 Mua hàng</span>
-                                    </button>
-                                    -->
                                     <button class="copy-icon-btn" id="copy-clean-btn" title="Sao chép link sạch" style="width: auto; height: 26px; padding: 0 8px; font-size: 0.65rem; display: flex; align-items: center; gap: 3px; border-radius: 5px;">
                                         <span class="copy-text">Sao chép</span>
                                         <svg class="icon-copy" style="width:10px; height:10px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -555,7 +505,6 @@ try {
         </div>
     </div>
 
-    <!-- Beta Testing Modal -->
     <div id="beta-modal" class="modal-backdrop">
         <div class="modal-card">
             <div class="modal-icon">🧪</div>
@@ -587,6 +536,6 @@ try {
     }
     </script>
     <script src="app.js?v=<?php echo time(); ?>"></script>
-    <?php if($auto_link): ?><script>window.onload=function(){document.getElementById('extract-btn').click();};</script><?php endif; ?>
+    <?php if($auto_link): ?><script>window.onload=function(){setTimeout(function(){document.getElementById('extract-btn').click();}, 300);};</script><?php endif; ?>
 </body>
 </html>

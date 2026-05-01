@@ -1,16 +1,12 @@
 <?php
-/**
- * ReelsLink Pro - Bookmarklet Installation Guide
- */
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $current_domain = $_SERVER['HTTP_HOST'];
 $base_path = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 $app_url = $protocol . "://" . $current_domain . $base_path . '/index.php';
 $current_page = $protocol . "://" . $current_domain . $_SERVER['PHP_SELF'];
 
-$bookmarklet_js = "javascript:(function(){var h=document.documentElement.innerHTML;var m=h.match(/[a-z0-9.\\\%:_\/-]*(?:shopee\.vn|shp\.ee|shope\.ee)[^&quot;\'\s<>|]*/i);if(m){var url='" . $app_url . "?extract='+encodeURIComponent(m[0])+'&source='+encodeURIComponent(window.location.href);window.open(url,'_blank');}else{alert('Không tìm thấy link!');}})();";
+$bookmarklet_js = 'javascript:(function(){var h=document.documentElement.innerHTML;var m=h.match(/[a-z0-9.\\\-]*?(?:shopee\\.vn|shp\\.ee|shope\\.ee)[^\\s"\'<>|]*/i);var t=m?m[0]:"";if(!t){var l=document.getElementsByTagName("a");for(var i=0;i<l.length;i++){var r=l[i].href;if(r.indexOf("shopee.vn")!==-1||r.indexOf("shp.ee")!==-1||r.indexOf("shope.ee")!==-1){t=r;break;}}}if(!t)t=window.location.href;if(t.indexOf("shopee.vn")===-1&&t.indexOf("shp.ee")===-1&&t.indexOf("shope.ee")===-1){alert("Không tìm thấy link Shopee!");return;}window.open("' . $app_url . '?extract="+encodeURIComponent(t)+"&source="+encodeURIComponent(window.location.href),"_blank");})();';
 
-// Lấy cấu hình Branding
 $site_title = 'FbReels Pro';
 $site_favicon = 'image/favicon.png';
 $site_logo = 'image/favicon.png';
@@ -33,7 +29,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hướng dẫn Bookmarklet - <?php echo htmlspecialchars($site_title); ?></title>
-    <meta name="description" content="Hướng dẫn sử dụng Bookmarklet Magic Link để lấy link Shopee Affiliate từ Facebook Reels trên điện thoại và máy tính một cách dễ dàng.">
+    <meta name="description" content="Hướng dẫn sử dụng Bookmarklet Magic Link để lấy link Shopee Affiliate từ Facebook Reels.">
     <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($site_favicon); ?>">
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -165,7 +161,6 @@ try {
             <button class="toggle-btn" onclick="showTab('mobile')"><i class="fas fa-mobile-alt"></i> Điện thoại</button>
         </div>
 
-        <!-- DESKTOP GUIDE -->
         <div id="desktop-guide" class="bookmarklet-card">
             <h2 style="margin-bottom: 1rem; font-size: 1.8rem; color: var(--text-main);">Cài đặt trên Máy tính</h2>
             <p style="color: var(--text-dim); line-height: 1.6; max-width: 600px; margin: 0 auto; font-size: 0.95rem;">
@@ -176,7 +171,7 @@ try {
                 <div class="drag-instruction">
                     <i class="fas fa-mouse-pointer"></i> Kéo nút này vào thanh dấu trang (Bookmarks Bar)
                 </div>
-                <a href="<?php echo $bookmarklet_js; ?>" class="magic-link-btn" onclick="return false;" style="cursor: grab;">
+                <a href="<?php echo htmlspecialchars($bookmarklet_js); ?>" class="magic-link-btn" onclick="return false;" style="cursor: grab;">
                     <span class="stars">✨</span> Magic Link V6.5 <span class="stars">✨</span>
                 </a>
                 <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1.5rem;">
@@ -209,11 +204,10 @@ try {
             </div>
 
             <div style="margin-top: 2rem;">
-                <img src="image/affreel.gif" alt="Hướng dẫn setup" style="max-width: 80%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                <img src="image/affreel.gif" alt="Hướng dẫn" style="max-width: 80%; border-radius: 12px; border: 1px solid var(--border-color);">
             </div>
         </div>
 
-        <!-- MOBILE GUIDE -->
         <div id="mobile-guide" class="bookmarklet-card mobile-instructions">
             <h2 style="margin-bottom: 1rem; font-size: 1.8rem; color: var(--text-main);">Cài đặt trên Điện thoại</h2>
             <p style="color: var(--text-dim); line-height: 1.6; max-width: 600px; margin: 0 auto; font-size: 0.95rem;">
@@ -258,11 +252,6 @@ try {
                     </div>
                 </div>
             </div>
-            <!-- 
-            <div style="margin-top: 2rem;">
-                <img src="image/affreel.gif" alt="Hướng dẫn setup" style="max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-            </div>
-            -->
         </div>
 
         <div style="text-align: center; margin-top: 3rem; padding-bottom: 3rem;">
@@ -273,7 +262,6 @@ try {
     </div>
 
     <script>
-        // Theme Toggle Logic
         const themeToggle = document.getElementById('theme-toggle');
         const body = document.body;
         

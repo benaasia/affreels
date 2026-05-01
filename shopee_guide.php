@@ -1,13 +1,9 @@
 <?php
-/**
- * AffReel Pro - Shopee Link Conversion Guide
- */
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $current_domain = $_SERVER['HTTP_HOST'];
 $base_path = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 $current_page = $protocol . "://" . $current_domain . $_SERVER['PHP_SELF'];
 
-// Lấy cấu hình Branding
 $site_title = 'FbReels Pro';
 $site_favicon = 'image/favicon.png';
 $site_logo = 'image/favicon.png';
@@ -181,7 +177,6 @@ try {
     </div>
 
     <script>
-        // Theme Toggle Logic
         const themeToggle = document.getElementById('theme-toggle');
         const body = document.body;
         

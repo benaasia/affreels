@@ -1,15 +1,9 @@
 <?php
-/**
- * ReelsLink Pro V6.5 - Admin Panel
- * Dashboard, Settings (tên miền), Pagination, Password Modal (bcrypt)
- */
-
 session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
 
-// === Database Connection & Migration ===
 try {
     $db = new PDO("sqlite:" . DB_FILE);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -23,20 +17,15 @@ try {
 
     $db->exec("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT DEFAULT '')");
 
-    // Khởi tạo mật khẩu bcrypt lần đầu
     $pw_row = $db->prepare("SELECT value FROM settings WHERE key = 'admin_password_hash'");
     $pw_row->execute();
     if (!$pw_row->fetch()) {
         $db->prepare("INSERT INTO settings (key, value) VALUES ('admin_password_hash', ?)")->execute([password_hash(DEFAULT_PASSWORD, PASSWORD_BCRYPT)]);
     }
 
-    // Cột source_url lưu link Reels hoặc link Shopee rút gọn tùy tab sử dụng
-
 } catch (PDOException $e) {
     die("Database Error: " . $e->getMessage());
 }
-
-// === Helpers ===
 function getSetting($db, $key, $default = '') {
     try {
         $s = $db->prepare("SELECT value FROM settings WHERE key = ?"); $s->execute([$key]);
@@ -47,7 +36,6 @@ function setSetting($db, $key, $value) {
     $db->prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)")->execute([$key, $value]);
 }
 
-// KIỂM TRA CẤU HÌNH API (Chỉ chạy khi không phải AJAX)
 $remote_api_key = trim(getSetting($db, 'remote_api_key', 'FREE-85C45DDDBF3CEADB'));
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
@@ -58,7 +46,6 @@ if (empty($remote_api_key) && !$is_ajax && !isset($_POST['save_branding']) && !i
     }
 }
 
-// === Auth ===
 if (isset($_GET['logout'])) { session_destroy(); header('Location: admin.php'); exit; }
 
 $login_error = '';
@@ -76,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_password'])
 
 $is_logged_in = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 
-// === AJAX Handlers ===
 if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_slug'])) {
         header('Content-Type: application/json');
@@ -140,36 +126,27 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['upload_image']) && isset($_FILES['upload_image'])) {
         header('Content-Type: application/json');
-        
         $upload_dir = __DIR__ . '/image/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
-        
         $file = $_FILES['upload_image'];
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mime = finfo_file($finfo, $file['tmp_name']);
         finfo_close($finfo);
-        
         $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/webp', 'image/svg+xml'];
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $allowed_exts = ['jpg', 'jpeg', 'png', 'gif', 'ico', 'webp', 'svg'];
-        
         if (!in_array($mime, $allowed_mimes) || !in_array($ext, $allowed_exts)) {
             echo json_encode(['success'=>false, 'message'=>'Định dạng file không hợp lệ hoặc bị cấm.']); exit;
         }
-
-        // Kiểm tra xem có thực sự là ảnh không (trừ SVG là text)
         if ($ext !== 'svg') {
             $check = getimagesize($file['tmp_name']);
             if ($check === false) {
                 echo json_encode(['success'=>false, 'message'=>'File tải lên không phải là ảnh hợp lệ.']); exit;
             }
         }
-        
         $new_name = 'up_' . time() . '_' . bin2hex(random_bytes(2)) . '.' . $ext;
         $target = $upload_dir . $new_name;
-        
         if (move_uploaded_file($file['tmp_name'], $target)) {
-            // Chuyển URL thành dạng tương đối để gọi trên web dễ hơn
             $rel_target = 'image/' . $new_name;
             echo json_encode(['success'=>true, 'url'=>$rel_target]); exit;
         }
@@ -186,12 +163,11 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting($db, 'site_favicon', trim($_POST['site_favicon'] ?? ''));
         setSetting($db, 'site_og_image', trim($_POST['site_og_image'] ?? ''));
         setSetting($db, 'site_video_url', trim($_POST['site_video_url'] ?? ''));
-        setSetting($db, 'site_fb_token', trim($_POST['site_fb_token'] ?? '')); // Token riêng của Client
+        setSetting($db, 'site_fb_token', trim($_POST['site_fb_token'] ?? ''));
         echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình thương hiệu.']); exit;
     }
 }
 
-// === Page & Data ===
 $tab = isset($_GET['tab']) ? $_GET['tab'] : 'dashboard';
 $stats = [];
 $total_links = 0;
@@ -204,8 +180,6 @@ $total_pages = 1;
 
 if ($is_logged_in) {
     $custom_domain = getSetting($db, 'custom_domain');
-
-    // Lấy cấu hình Branding
     $site_title = getSetting($db, 'site_title', 'FbReels Pro');
     $site_author = getSetting($db, 'site_author', 'ReelsLink');
     $site_favicon = getSetting($db, 'site_favicon', 'image/favicon.png');
@@ -226,7 +200,6 @@ if ($is_logged_in) {
                 $order = 'created_at DESC'; break;
         }
 
-        // Count for pagination
         $count_sql = "SELECT COUNT(*) FROM links";
         $params = [];
         if ($search) {
@@ -256,14 +229,12 @@ $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "
 $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 $display_base = $custom_domain ? $protocol . "://" . $custom_domain : $base_url;
 
-// Build query string helper
 function buildQuery($overrides = []) {
     global $sort_by, $search, $page, $tab;
     $params = ['tab' => $tab];
     if ($sort_by !== 'clicks_desc') $params['sort'] = $sort_by;
     if ($search) $params['search'] = $search;
     $params = array_merge($params, $overrides);
-    // Remove defaults
     if (isset($params['tab']) && $params['tab'] === 'dashboard') unset($params['tab']);
     if (isset($params['sort']) && $params['sort'] === 'clicks_desc') unset($params['sort']);
     if (isset($params['page']) && $params['page'] <= 1) unset($params['page']);
@@ -287,7 +258,6 @@ function buildQuery($overrides = []) {
 <body class="admin-body">
 
 <?php if (!$is_logged_in): ?>
-<!-- =================== LOGIN =================== -->
 <div class="admin-login-wrapper">
     <div class="admin-login-card">
         <div class="admin-login-icon">🔐</div>
@@ -311,7 +281,6 @@ function buildQuery($overrides = []) {
 </div>
 
 <?php else: ?>
-<!-- =================== DASHBOARD =================== -->
 <div class="admin-dashboard">
     <nav class="admin-topbar">
         <div class="admin-topbar-left">
@@ -356,13 +325,11 @@ function buildQuery($overrides = []) {
     </nav>
 
 <?php if ($tab === 'settings'): ?>
-<!-- =================== SETTINGS PAGE =================== -->
 <div class="admin-page-content">
     <div class="admin-page-header">
         <h2>⚙️ Cài đặt hệ thống</h2>
     </div>
 
-    <!-- Custom Domain -->
     <div class="admin-settings-card">
         <div class="admin-settings-card-header">
             <h3>🌐 Tên miền phụ (Custom Domain)</h3>
@@ -379,7 +346,6 @@ function buildQuery($overrides = []) {
         </div>
     </div>
 
-    <!-- Branding & SEO -->
     <div class="admin-settings-card" style="margin-top: 1.2rem;">
         <div class="admin-settings-card-header">
             <h3>🎨 Thương hiệu & SEO</h3>
@@ -454,11 +420,9 @@ function buildQuery($overrides = []) {
             <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu cấu hình thương hiệu</button>
         </div>
         
-        <!-- Hidden File Input cho Upload -->
         <input type="file" id="admin-image-uploader" style="display:none;" onchange="handleImageUpload(this)" accept="image/*">
     </div>
 
-    <!-- System Info -->
     <div class="admin-settings-card" style="margin-top: 1.2rem;">
         <div class="admin-settings-card-header">
             <h3>📋 Thông tin hệ thống</h3>
@@ -486,9 +450,7 @@ function buildQuery($overrides = []) {
 </div>
 
 <?php else: ?>
-<!-- =================== DASHBOARD TAB =================== -->
 
-    <!-- Stats Cards -->
     <div class="admin-stats-grid">
         <div class="admin-stat-card">
             <div class="admin-stat-icon" style="background: linear-gradient(135deg, #6366f1, #818cf8);">
@@ -519,7 +481,6 @@ function buildQuery($overrides = []) {
         </div>
     </div>
 
-    <!-- Toolbar -->
     <div class="admin-toolbar">
         <form method="GET" class="admin-search-form">
             <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Tìm kiếm link..." class="admin-search-input">
@@ -553,7 +514,6 @@ function buildQuery($overrides = []) {
         </div>
     </div>
 
-    <!-- Links Table -->
     <div class="admin-table-wrapper">
         <?php if (empty($stats)): ?>
             <div class="admin-empty-state">
@@ -642,7 +602,6 @@ function buildQuery($overrides = []) {
                 </tbody>
             </table>
 
-            <!-- Pagination -->
             <?php if ($total_pages > 1): ?>
             <div class="admin-pagination">
                 <?php if ($page > 1): ?>
@@ -653,24 +612,30 @@ function buildQuery($overrides = []) {
                 $range = 2;
                 $start_page = max(1, $page - $range);
                 $end_page = min($total_pages, $page + $range);
-                if ($start_page > 1): ?>
-                    <a href="<?php echo buildQuery(['page' => 1]); ?>" class="admin-page-btn">1</a>
-                    <?php if ($start_page > 2): ?><span class="admin-page-dots">…</span><?php endif; ?>
-                <?php endif;
 
-                for ($p = $start_page; $p <= $end_page; $p++): ?>
-                    <a href="<?php echo buildQuery(['page' => $p]); ?>" class="admin-page-btn <?php echo $p === $page ? 'active' : ''; ?>"><?php echo $p; ?></a>
-                <?php endfor;
+                if ($page > 1) {
+                    echo '<a href="' . buildQuery(['page' => $page - 1]) . '" class="admin-page-btn">← Trước</a>';
+                }
 
-                if ($end_page < $total_pages): ?>
-                    <?php if ($end_page < $total_pages - 1): ?><span class="admin-page-dots">…</span><?php endif; ?>
-                    <a href="<?php echo buildQuery(['page' => $total_pages]); ?>" class="admin-page-btn"><?php echo $total_pages; ?></a>
-                <?php endif; ?>
+                if ($start_page > 1) {
+                    echo '<a href="' . buildQuery(['page' => 1]) . '" class="admin-page-btn">1</a>';
+                    if ($start_page > 2) echo '<span class="admin-page-dots">…</span>';
+                }
 
-                <?php if ($page < $total_pages): ?>
-                    <a href="<?php echo buildQuery(['page' => $page + 1]); ?>" class="admin-page-btn">Sau →</a>
-                <?php endif; ?>
+                for ($p = $start_page; $p <= $end_page; $p++) {
+                    $active_class = ($p === $page) ? 'active' : '';
+                    echo '<a href="' . buildQuery(['page' => $p]) . '" class="admin-page-btn ' . $active_class . '">' . $p . '</a>';
+                }
 
+                if ($end_page < $total_pages) {
+                    if ($end_page < $total_pages - 1) echo '<span class="admin-page-dots">…</span>';
+                    echo '<a href="' . buildQuery(['page' => $total_pages]) . '" class="admin-page-btn">' . $total_pages . '</a>';
+                }
+
+                if ($page < $total_pages) {
+                    echo '<a href="' . buildQuery(['page' => $page + 1]) . '" class="admin-page-btn">Sau →</a>';
+                }
+                ?>
                 <span class="admin-page-info">Trang <?php echo $page; ?>/<?php echo $total_pages; ?> · <?php echo number_format($filtered_count); ?> link</span>
             </div>
             <?php else: ?>
@@ -680,10 +645,9 @@ function buildQuery($overrides = []) {
             <?php endif; ?>
         <?php endif; ?>
     </div>
-<?php endif; // end dashboard/settings tab ?>
+<?php endif; ?>
 </div>
 
-<!-- ===== EDIT MODAL ===== -->
 <div class="admin-modal-overlay" id="edit-modal" style="display:none;">
     <div class="admin-modal">
         <div class="admin-modal-header">
@@ -701,7 +665,6 @@ function buildQuery($overrides = []) {
     </div>
 </div>
 
-<!-- ===== PASSWORD MODAL ===== -->
 <div class="admin-modal-overlay" id="password-modal" style="display:none;">
     <div class="admin-modal">
         <div class="admin-modal-header">
@@ -724,7 +687,6 @@ function buildQuery($overrides = []) {
 <script>
 const BASE_URL = '<?php echo $display_base; ?>';
 
-// === Modal Helpers ===
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function openPasswordModal() { openModal('password-modal'); document.getElementById('pw-current').focus(); }
@@ -752,7 +714,7 @@ function handleImageUpload(input) {
             } else {
                 showToast('❌ ' + data.message, true);
             }
-            input.value = ''; // Reset input
+            input.value = '';
         })
         .catch(e => {
             showToast('❌ Lỗi kết nối khi tải ảnh.', true);
@@ -781,7 +743,6 @@ function saveBranding() {
         });
 }
 
-// === Custom Domain ===
 function saveCustomDomain() {
     const domain = document.getElementById('custom-domain-input').value.trim();
     const fd = new FormData();
@@ -795,7 +756,6 @@ function saveCustomDomain() {
         });
 }
 
-// === Change Password ===
 function changePassword() {
     const cur = document.getElementById('pw-current').value;
     const np = document.getElementById('pw-new').value;
@@ -814,7 +774,6 @@ function changePassword() {
         });
 }
 
-// === Copy / Delete / Edit ===
 function copyShortLink(slug) {
     navigator.clipboard.writeText(BASE_URL + '/s/' + slug).then(() => showToast('Đã sao chép: ' + BASE_URL + '/s/' + slug));
 }
@@ -857,7 +816,7 @@ function updateBulkDeleteBtn() {
 function bulkDelete() {
     const checked = document.querySelectorAll('.row-checkbox:checked');
     if (checked.length === 0) return;
-    if (!confirm('⚠️ Bạn có chắc muốn xóa ' + checked.length + ' link đã chọn?\\nKhông thể hoàn tác!')) return;
+    if (!confirm('⚠️ Bạn có chắc muốn xóa ' + checked.length + ' link đã chọn?\nKhông thể hoàn tác!')) return;
     
     const slugs = Array.from(checked).map(cb => cb.value);
     const fd = new FormData();
@@ -879,7 +838,7 @@ function bulkDelete() {
                 });
                 document.getElementById('check-all').checked = false;
                 updateBulkDeleteBtn();
-                setTimeout(() => location.reload(), 600); // Reload to fix pagination/counts
+                setTimeout(() => location.reload(), 600);
             } else {
                 showToast('❌ ' + data.message, true);
             }
@@ -906,7 +865,6 @@ document.getElementById('modal-save-btn').addEventListener('click', () => {
         });
 });
 
-// === Toast ===
 function showToast(msg, isError = false) {
     let t = document.getElementById('admin-toast');
     if (!t) { t = document.createElement('div'); t.id = 'admin-toast'; document.body.appendChild(t); }

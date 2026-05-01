@@ -1,6 +1,4 @@
-/** ReelsLink Pro V6.5 - Hardcoded Auth Frontend **/
 document.addEventListener("DOMContentLoaded", () => {
-    // Theme Toggle Logic
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     
@@ -12,10 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 1. Kiểm tra localStorage
     let savedTheme = localStorage.getItem('theme');
     
-    // 2. Nếu chưa lưu, kiểm tra hệ thống (System Preference)
     if (!savedTheme) {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         savedTheme = prefersDark ? 'dark' : 'light';
@@ -31,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Lắng nghe nếu user thay đổi chế độ hệ thống trong lúc đang mở web
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         if (!localStorage.getItem('theme')) {
             setTheme(e.matches ? 'dark' : 'light');
@@ -71,22 +66,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const card = document.querySelector('.extractor-card');
     let activeTab = 'shopee';
 
-    // Dùng Key cứng giống Extension để đảm bảo độ tin cậy tuyệt đối
     const API_KEY = 'ReelsLink-v4-Secure-Key-2026';
 
-    // Hàm trích xuất link Shopee từ text có nhiều nội dung
     function extractShopeeUrl(text) {
-        const match = text.match(/https?:\/\/[a-z0-9.\-]*(?:shopee\.vn|shp\.ee|shope\.ee)[^\s"'<>|]*/i);
-        return match ? match[0] : null;
+        if (!text) return null;
+        const lower = text.toLowerCase();
+        if (lower.includes('shopee.vn') || lower.includes('shp.ee') || lower.includes('shope.ee')) {
+            const match = text.match(/(?:https?:\/\/)?[a-z0-9.\\\-]*?(?:shopee\\.vn|shp\\.ee|shope\\.ee)[^\\s"\'<>|]*/i);
+            return match ? match[0] : text.trim();
+        }
+        return null;
     }
 
-    // Hàm trích xuất link Reels từ text
     function extractReelsUrl(text) {
-        const match = text.match(/https?:\/\/[a-z0-9.\-]*(?:facebook\.com\/reel|fb\.watch|fb\.com\/reel)[^\s"'<>|]*/i);
+        const match = text.match(/(?:https?:\/\/)?[a-z0-9.\-]*(?:facebook\.com\/reel|fb\.watch|fb\.com\/reel)[^\s"'<>|]*/i);
         return match ? match[0] : null;
     }
 
-    // Nút Dán link Shopee từ clipboard
     const pasteShopeeBtn = document.getElementById('paste-shopee-url-btn');
     if (pasteShopeeBtn && shopeeUrlInput) {
         pasteShopeeBtn.addEventListener('click', async () => {
@@ -101,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     setTimeout(() => {
                         pasteShopeeBtn.textContent = '📋 Dán';
                         pasteShopeeBtn.style.background = '';
-                        // Tự động tạo link
                         if (extractBtn) extractBtn.click();
                     }, 1000);
                 } else {
@@ -113,7 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Nút Dán link Reels từ clipboard
     const pasteReelsBtn = document.getElementById('paste-reels-url-btn');
     if (pasteReelsBtn && urlInput) {
         pasteReelsBtn.addEventListener('click', async () => {
@@ -128,7 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     setTimeout(() => {
                         pasteReelsBtn.textContent = '📋 Dán';
                         pasteReelsBtn.style.background = '';
-                        // Tự động tạo link
                         if (extractBtn) extractBtn.click();
                     }, 1000);
                 } else {
@@ -140,14 +133,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Khi dán thủ công (Ctrl+V) vào ô, cũng tự lọc link Shopee
     if (shopeeUrlInput) {
         shopeeUrlInput.addEventListener('paste', (e) => {
             setTimeout(() => {
                 const cleaned = extractShopeeUrl(shopeeUrlInput.value);
                 if (cleaned) {
                     shopeeUrlInput.value = cleaned;
-                    // Tự động tạo link sau khi dán thủ công
                     setTimeout(() => {
                         if (extractBtn) extractBtn.click();
                     }, 100);
@@ -158,14 +149,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Khi dán thủ công (Ctrl+V) vào ô Reels, cũng tự lọc link
     if (urlInput) {
         urlInput.addEventListener('paste', (e) => {
             setTimeout(() => {
                 const cleaned = extractReelsUrl(urlInput.value);
                 if (cleaned) {
                     urlInput.value = cleaned;
-                    // Tự động tạo link sau khi dán thủ công
                     setTimeout(() => {
                         if (extractBtn) extractBtn.click();
                     }, 100);
@@ -207,21 +196,18 @@ document.addEventListener("DOMContentLoaded", () => {
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             activeTab = btn.getAttribute('data-tab');
-            
-            // Cập nhật Hash nhưng phải giữ lại affiliate_id nếu có
             let newHash = activeTab;
             const urlParams = new URLSearchParams(window.location.search);
             const id = shopeeAffIdInput ? shopeeAffIdInput.value.trim() : '';
 
             if (activeTab === 'shopee') {
                 if (!id || id === urlParams.get('affiliate_id')) {
-                    newHash = ''; // Mặc định không cần hash cho Shopee
+                    newHash = '';
                 } else {
-                    newHash = `?affiliate_id=${id}`; // Bỏ chữ shopee, chỉ giữ lại tham số
+                    newHash = `?affiliate_id=${id}`;
                 }
             }
             
-            // Cập nhật URL (xóa hash nếu là rỗng)
             if (newHash === '') {
                 if (window.location.hash !== '') {
                     history.pushState(null, null, window.location.pathname + window.location.search);
@@ -251,25 +237,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Lắng nghe thay đổi ID để cập nhật URL
     if (shopeeAffIdInput) {
         shopeeAffIdInput.addEventListener('input', () => {
             const id = shopeeAffIdInput.value.trim();
             const urlParams = new URLSearchParams(window.location.search);
             
-            // Hiện/ẩn nút xóa
             if (shopeeAffClearBtn) {
                 shopeeAffClearBtn.style.display = id ? 'block' : 'none';
             }
 
             if (activeTab === 'shopee') {
-                // Nếu ID trùng với ID trong Query String (?affiliate_id=...) 
-                // thì không cần thêm vào Hash nữa để tránh trùng lặp 2 tham số trên URL
                 if (id && id === urlParams.get('affiliate_id')) {
                     history.pushState(null, null, window.location.pathname + window.location.search);
                 } else {
                     if (id) {
-                        window.location.hash = `?affiliate_id=${id}`; // Bỏ chữ shopee
+                        window.location.hash = `?affiliate_id=${id}`;
                     } else {
                         history.pushState(null, null, window.location.pathname + window.location.search);
                     }
@@ -277,24 +259,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Nút xóa sạch ID - dùng mousedown để chạy trước khi blur
         if (shopeeAffClearBtn) {
             shopeeAffClearBtn.addEventListener('mousedown', (e) => {
-                e.preventDefault(); // QUAN TRỌNG: Ngăn input mất focus (blur)
+                e.preventDefault();
                 e.stopPropagation();
                 shopeeAffIdInput.value = '';
-                // Cập nhật URL về trạng thái sạch
                 history.pushState(null, null, window.location.pathname + window.location.search);
-                // Ẩn chính nó
                 shopeeAffClearBtn.style.display = 'none';
-                // Focus lại ô nhập (thực ra nhờ preventDefault nên nó không mất focus)
                 shopeeAffIdInput.focus();
-                // Nếu đang hiện Link Chia Sẻ thì ẩn đi vì ID đã trống
                 if (typeof updateShareUrl === 'function') updateShareUrl('');
             });
         }
         
-        // Khi người dùng gõ xong và nhấn ra ngoài, nếu có ID thì ẩn ô nhập đi và hiện link chia sẻ
         shopeeAffIdInput.addEventListener('blur', () => {
             const id = shopeeAffIdInput.value.trim();
             if (id && shopeeAffGroup) {
@@ -306,7 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Nhấn Enter để hoàn tất nhập ID và chuyển sang dán link
         shopeeAffIdInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -315,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Nút OK cũng làm nhiệm vụ tương tự
         if (shopeeAffOkBtn) {
             shopeeAffOkBtn.addEventListener('click', () => {
                 const id = shopeeAffIdInput.value.trim();
@@ -328,7 +302,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Sao chép link chia sẻ
         if (copyShareUrlBtn) {
             copyShareUrlBtn.addEventListener('click', () => {
                 const url = shareUrlDisplay.textContent;
@@ -345,7 +318,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Nút sửa ID
         if (editAffIdBtn) {
             editAffIdBtn.addEventListener('click', () => {
                 if (shareLinkGroup) shareLinkGroup.style.display = 'none';
@@ -358,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Hàm cập nhật link chia sẻ
     function updateShareUrl(id) {
         if (!shareUrlDisplay) return;
         if (!id) {
@@ -369,15 +340,11 @@ document.addEventListener("DOMContentLoaded", () => {
         shareUrlDisplay.textContent = baseUrl + '?affiliate_id=' + id;
     }
 
-    // Hàm kích hoạt tab và xử lý ID dựa trên URL/Hash
     function handleHash() {
         const fullHash = window.location.hash.replace('#', '');
-        
-        // 1. Ưu tiên lấy ID từ Query String (?affiliate_id=123)
         const urlParams = new URLSearchParams(window.location.search);
         let idFromUrl = urlParams.get('affiliate_id');
         
-        // 2. Nếu không có, lấy từ Hash (#shopee?affiliate_id=123)
         const parts = fullHash.split('?');
         const hashTab = parts[0];
         const query = parts[1] || '';
@@ -387,7 +354,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (match && match[1]) idFromUrl = match[1];
         }
 
-        // Xử lý điền ID và ẩn ô nhập
         if (idFromUrl) {
             if (shopeeAffIdInput) {
                 shopeeAffIdInput.value = idFromUrl;
@@ -401,25 +367,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         } else {
-            // Nếu không có ID trong URL, hiện lại ô nhập
             if (shopeeAffIdInput && !shopeeAffIdInput.value) {
                  if (shopeeAffGroup) shopeeAffGroup.style.display = 'block';
                  if (shareLinkGroup) shareLinkGroup.style.display = 'none';
             }
         }
 
-        // Chuyển tab
         if (!hashTab) {
             const urlParams = new URLSearchParams(window.location.search);
             let defaultTab = 'shopee';
-            
-            // Nếu có tham số extract (từ bookmarklet/extension) thì ưu tiên mở tab FB Reels
             if (urlParams.has('extract')) {
-                defaultTab = 'fbreel';
+                const extractVal = urlParams.get('extract').toLowerCase();
+                if (extractVal.includes('shopee.vn') || extractVal.includes('shp.ee') || extractVal.includes('shope.ee')) {
+                    defaultTab = 'shopee';
+                } else {
+                    defaultTab = 'fbreel';
+                }
             } else {
                 defaultTab = localStorage.getItem('active_tab') || 'shopee';
             }
-
             const defaultBtn = document.querySelector(`.tab-btn[data-tab="${defaultTab}"]`);
             if (defaultBtn && !defaultBtn.classList.contains('active')) defaultBtn.click();
         } else {
@@ -428,14 +394,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Khởi tạo khi load trang
     handleHash();
-
-    // Lắng nghe khi Hash thay đổi (nút Back/Forward)
     window.addEventListener('hashchange', handleHash);
 
     if (card.classList.contains('auto-processing')) {
         extractBtn.style.display = 'none';
+        const shopeeAffGroup = document.getElementById('shopee-aff-group');
+        const shopeeUrlGroup = document.getElementById('shopee-url-group');
+        const reelsUrlGroup = document.getElementById('reels-url-group');
+        if (shopeeAffGroup) shopeeAffGroup.style.display = 'none';
+        if (shopeeUrlGroup) shopeeUrlGroup.style.display = 'none';
+        if (reelsUrlGroup) reelsUrlGroup.style.display = 'none';
     }
 
     extractBtn.addEventListener('click', async () => {
@@ -445,14 +414,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeTab === 'fbreel') {
             const val = urlInput.value.trim();
             if (!val) return showStatus('Vui lòng nhập link Reels!', true);
-            
             const cleaned = extractReelsUrl(val);
             if (!cleaned) return showStatus('Link không phải định dạng Reels (facebook.com/reel, fb.watch...)!', true);
-            
             formData.append('reels_url', cleaned);
-            urlInput.value = cleaned; // Cập nhật lại ô nhập cho sạch
-            
-            // Gửi source URL (trang FB Reel gốc) nếu có
+            urlInput.value = cleaned;
             const sourceInput = document.getElementById('source-url');
             if (sourceInput && sourceInput.value.trim()) {
                 formData.append('source_url', sourceInput.value.trim());
@@ -460,21 +425,19 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (activeTab === 'shopee') {
             const val = shopeeUrlInput.value.trim();
             if (!val) return showStatus('Vui lòng nhập link Shopee!', true);
-            
             const cleaned = extractShopeeUrl(val);
             if (!cleaned) return showStatus('Link không phải định dạng Shopee (shopee.vn, shp.ee...)!', true);
-            
             formData.append('shopee_url', cleaned);
-            shopeeUrlInput.value = cleaned; // Cập nhật lại ô nhập cho sạch
-            
+            shopeeUrlInput.value = cleaned;
             const affId = shopeeAffIdInput.value.trim();
-            if (affId) {
-                formData.append('shopee_aff_id', affId);
+            if (affId) formData.append('shopee_aff_id', affId);
+            const sourceInput = document.getElementById('source-url');
+            if (sourceInput && sourceInput.value.trim()) {
+                formData.append('source_url', sourceInput.value.trim());
             }
         }
 
         formData.append('api_key', API_KEY);
-
         showStatus('');
         resultSection.style.display = 'none';
         fallbackSection.style.display = 'none';
@@ -483,34 +446,24 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch('index.php', {
                 method: 'POST',
-                headers: {
-                    'X-API-KEY': API_KEY // Gửi Key qua Header
-                },
+                headers: { 'X-API-KEY': API_KEY },
                 body: formData
             });
 
             if (response.status === 403) throw new Error('Lỗi xác thực: Key không khớp (403).');
             if (!response.ok) throw new Error('Kết nối server thất bại');
-
             const data = await response.json();
 
             if (data.success) {
                 shortLinkDisplay.textContent = data.short_link;
                 longLinkDisplay.textContent = data.full_link || data.link;
-                
-                const affId = shopeeAffIdInput.value.trim();
-
                 if (activeTab === 'shopee' && data.clean_link) {
                     cleanLinkDisplay.textContent = data.clean_link;
                     redirLinkDisplay.textContent = data.link;
                     shopeeResultDetails.style.display = 'block';
                     longLinkDisplay.textContent = data.full_link || data.link;
-                    
-                    // Hiện nút toggle chi tiết
                     const toggleBtn = document.getElementById('toggle-details-btn');
                     if (toggleBtn) toggleBtn.style.display = 'block';
-                    
-                    // Ẩn chi tiết mặc định
                     const detailsSection = document.getElementById('link-details-section');
                     if (detailsSection) detailsSection.style.display = 'none';
                 } else {
@@ -519,15 +472,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (toggleBtn) toggleBtn.style.display = 'none';
                     if (longLinkSection) longLinkSection.style.display = 'block';
                 }
-
                 resultSection.style.display = 'block';
                 showStatus('Đã trích xuất!', false);
                 resultSection.scrollIntoView({ behavior: 'smooth' });
-
-                // Thêm trạng thái loading cho nút copy rút gọn
                 copyShortBtn.classList.add('loading-scrape');
-
-                // Gọi Facebook Scrape ngầm (Async)
                 fetch(`index.php?action=scrape&url=${encodeURIComponent(data.short_link)}`)
                     .then(() => {
                         copyShortBtn.classList.remove('loading-scrape');
@@ -560,7 +508,6 @@ document.addEventListener("DOMContentLoaded", () => {
     copyCleanBtn.addEventListener('click', () => handleCopy(copyCleanBtn, cleanLinkDisplay));
     copyRedirBtn.addEventListener('click', () => handleCopy(copyRedirBtn, redirLinkDisplay));
 
-    // Nút Mua hàng (Open new tab)
     const buyButtons = [
         { btn: document.getElementById('buy-short-btn'), display: shortLinkDisplay },
         { btn: document.getElementById('buy-dest-btn'), display: longLinkDisplay },
@@ -578,7 +525,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Modal Beta
 function dismissBetaModal() {
     const modal = document.getElementById('beta-modal');
     if (modal) {
@@ -587,16 +533,12 @@ function dismissBetaModal() {
     }
 }
 
-// Show modal on load if not dismissed or older than 24h
 document.addEventListener('DOMContentLoaded', () => {
     const lastDismissed = localStorage.getItem('beta_notice_last_dismissed');
     const now = Date.now();
     const twentyFourHours = 24 * 60 * 60 * 1000;
-
     if (!lastDismissed || (now - lastDismissed > twentyFourHours)) {
         const modal = document.getElementById('beta-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-        }
+        if (modal) modal.style.display = 'flex';
     }
 });
