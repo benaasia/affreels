@@ -199,20 +199,27 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
     $repo_api_url = "https://api.github.com/repos/benaasia/affreels/contents/?t=" . time();
     $raw_base_url = "https://raw.githubusercontent.com/benaasia/affreels/main/";
     
-    $opts = [
-        'http' => [
-            'method' => 'GET',
-            'header' => [
-                'User-Agent: FbReels-Pro-Updater',
-                'Accept: application/vnd.github.v3+json'
-            ]
-        ]
-    ];
-    $context = stream_context_create($opts);
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $repo_api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'User-Agent: PHP-Update-Checker',
+        'Accept: application/vnd.github.v3+json'
+    ]);
     
-    $remote_files = @file_get_contents($repo_api_url, false, $context);
-    if (!$remote_files) {
-        echo json_encode(['success' => false, 'message' => 'Không thể kết nối đến GitHub API.']); exit;
+    $remote_files = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curl_error = curl_error($ch);
+    curl_close($ch);
+
+    if ($remote_files === false || $http_code !== 200) {
+        $msg = 'Không thể kết nối đến máy chủ cập nhật.';
+        if ($http_code === 403) $msg = 'GitHub API bị giới hạn lượt gọi (Rate Limit). Vui lòng thử lại sau 1 giờ.';
+        elseif ($curl_error) $msg .= ' (Lỗi: ' . $curl_error . ')';
+        echo json_encode(['success' => false, 'message' => $msg]); exit;
     }
     
     $files = json_decode($remote_files, true);
@@ -238,11 +245,21 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
         }
         
         if ($should_update) {
-            $new_content = @file_get_contents($raw_base_url . $filename, false, $context);
-            if ($new_content !== false) {
-                if (@file_put_contents($local_path, $new_content)) {
-                    $updated_files[] = $filename;
-                }
+            $fch = curl_init();
+            curl_setopt($fch, CURLOPT_URL, $raw_base_url . $filename . "?t=" . time());
+            curl_setopt($fch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($fch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($fch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($fch, CURLOPT_TIMEOUT, 20);
+            curl_setopt($fch, CURLOPT_USERAGENT, 'PHP-Downloader');
+            
+            $content = curl_exec($fch);
+            $f_http_code = curl_getinfo($fch, CURLINFO_HTTP_CODE);
+            curl_close($fch);
+
+            if ($content !== false && $f_http_code === 200) {
+                file_put_contents($local_path, $content);
+                $updated_files[] = $filename;
             }
         }
     }
