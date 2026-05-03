@@ -249,6 +249,35 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
     exit;
 }
 
+// --- SHA Comparison Checker ---
+if (isset($_POST['action']) && $_POST['action'] === 'check_sha_update' && $is_logged_in) {
+    header('Content-Type: application/json');
+    $remote_files = json_decode($_POST['remote_files'] ?? '[]', true);
+    $has_update = false;
+    $skipped_files = ['links.db', '.htaccess', 'debug.log'];
+
+    foreach ($remote_files as $file) {
+        if ($file['type'] !== 'file') continue;
+        $filename = $file['name'];
+        if (in_array($filename, $skipped_files)) continue;
+
+        $local_path = __DIR__ . DIRECTORY_SEPARATOR . $filename;
+        if (!file_exists($local_path)) {
+            $has_update = true; break;
+        }
+
+        $local_content = file_get_contents($local_path);
+        $local_sha = sha1("blob " . strlen($local_content) . "\0" . $local_content);
+        
+        if ($local_sha !== $file['sha']) {
+            $has_update = true; break;
+        }
+    }
+
+    echo json_encode(['success' => true, 'has_update' => $has_update]);
+    exit;
+}
+
 $tab = isset($_GET['tab']) ? $_GET['tab'] : 'dashboard';
 $stats = [];
 $total_links = 0;
@@ -1088,8 +1117,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
         document.getElementById('sidebarOverlay').classList.toggle('active');
     }
 
-    // Update Checker for dist_client
-    function checkUpdates(isManual = false) {
+    // Smart Update Checker for Client (Dựa trên nội dung file)
+    async function checkUpdates(isManual = false) {
         const dot = document.getElementById('version-dot');
         if (isManual && dot) {
             dot.style.background = '#f59e0b';
@@ -1097,40 +1126,62 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
         }
 
         const currentVersion = "<?php echo $current_version; ?>";
-        // Thêm tham số thời gian để tránh bị cache bởi trình duyệt hoặc GitHub CDN
-        const repoUrl = "https://raw.githubusercontent.com/benaasia/affreels/main/version.json?t=" + Date.now();
+        const repoApiUrl = "https://api.github.com/repos/benaasia/affreels/contents/";
         
-        fetch(repoUrl)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.version) {
-                    if (data.version !== currentVersion) {
-                        const banner = document.getElementById('update-banner');
-                        if (banner) {
-                            document.getElementById('new-version-tag').textContent = 'v' + data.version;
-                            if (data.changelog) {
-                                document.getElementById('update-changelog').textContent = data.changelog;
-                            }
-                            banner.style.display = 'block';
-                            banner.scrollIntoView({ behavior: 'smooth' });
-                        }
-                    } else if (isManual) {
-                        showToast('✅ Bạn đang dùng phiên bản mới nhất.');
-                    }
-                }
-                if (dot) {
-                    dot.style.background = '#10b981';
-                    dot.style.boxShadow = '0 0 8px #10b981';
-                }
-            })
-            .catch(err => {
-                console.log("Update check failed:", err);
-                if (isManual) showToast('❌ Không thể kiểm tra cập nhật.', true);
-                if (dot) {
-                    dot.style.background = '#ef4444';
-                    dot.style.boxShadow = '0 0 8px #ef4444';
-                }
+        try {
+            const res = await fetch(repoApiUrl + "?t=" + Date.now(), {
+                headers: { 'Accept': 'application/vnd.github.v3+json' }
             });
+            const files = await res.json();
+            
+            if (!Array.isArray(files)) throw new Error("Invalid API response");
+
+            let hasUpdate = false;
+            let updateInfo = { version: currentVersion, changelog: 'Phát hiện thay đổi mã nguồn trên GitHub.' };
+
+            // Thử lấy thông tin version.json trước (nếu có) để lấy changelog
+            const versionFile = files.find(f => f.name === 'version.json');
+            if (versionFile) {
+                try {
+                    const vRes = await fetch("https://raw.githubusercontent.com/benaasia/affreels/main/version.json?t=" + Date.now());
+                    const vData = await vRes.json();
+                    updateInfo.version = vData.version || currentVersion;
+                    updateInfo.changelog = vData.changelog || updateInfo.changelog;
+                } catch(e) {}
+            }
+
+            // Gửi request ngầm về server để so sánh SHA của từng file
+            const fd = new FormData();
+            fd.append('action', 'check_sha_update');
+            fd.append('remote_files', JSON.stringify(files.map(f => ({name: f.name, sha: f.sha, type: f.type}))));
+
+            const checkRes = await fetch('admin.php', { method: 'POST', body: fd });
+            const checkData = await checkRes.json();
+
+            if (checkData.success && checkData.has_update) {
+                const banner = document.getElementById('update-banner');
+                if (banner) {
+                    document.getElementById('new-version-tag').textContent = 'v' + updateInfo.version;
+                    document.getElementById('update-changelog').textContent = updateInfo.changelog;
+                    banner.style.display = 'block';
+                    if (isManual) banner.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (isManual) {
+                showToast('✅ Hệ thống của bạn đã khớp hoàn toàn với GitHub.');
+            }
+
+            if (dot) {
+                dot.style.background = '#10b981';
+                dot.style.boxShadow = '0 0 8px #10b981';
+            }
+        } catch (err) {
+            console.log("Update check failed:", err);
+            if (isManual) showToast('❌ Không thể kết nối đến GitHub.', true);
+            if (dot) {
+                dot.style.background = '#ef4444';
+                dot.style.boxShadow = '0 0 8px #ef4444';
+            }
+        }
     }
 
     // Tự động kiểm tra khi load
