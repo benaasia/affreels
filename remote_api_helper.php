@@ -74,3 +74,7 @@ function smartFacebookScrape($url) {
         'fb_access_token' => $client_fb_token
     ]);
 }
+
+function smartCheckAPIStatus() {
+    return callRemoteAPI('status');
+}
