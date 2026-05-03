@@ -9,7 +9,7 @@ $branding = [
     'site_desc' => 'Chuyển đổi link Shopee Affiliate và lấy link từ Facebook Reels tự động chuyên nghiệp.',
     'site_keywords' => 'shopee affiliate, facebook reels, chuyển đổi link shopee, tạo link shopee, fb reels pro, affiliate marketing',
     'site_author' => 'FbReels Pro',
-    'site_logo' => $landing_url . '/image/favicon.png',
+    'site_logo' => $landing_url . '/image/logo.png',
     'site_favicon' => $landing_url . '/image/favicon.png',
     'site_og_image' => $landing_url . '/image/og.jpg',
     'site_video_url' => 'https://www.youtube.com/shorts/nj7U1OcOaX0'
@@ -137,9 +137,11 @@ $site_video_url = $branding['site_video_url'];
         }
 
         .logo img {
-            width: 36px;
             height: 36px;
-            border-radius: 50%;
+            width: auto;
+            border-radius: 6px;
+            background: white;
+            padding: 3px;
         }
 
         .nav-links a {
@@ -336,7 +338,9 @@ $site_video_url = $branding['site_video_url'];
     <nav class="glass" id="navbar">
         <a href="#" class="logo">
             <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo">
+            <!--
             <span><?php echo htmlspecialchars($site_title); ?></span>
+            -->
         </a>
         <div class="nav-links">
             <a href="../index.php">Ứng dụng</a>
@@ -407,7 +411,10 @@ $site_video_url = $branding['site_video_url'];
 
     <footer style="border-top: 1px solid var(--border); padding: 40px 20px; text-align: center; color: var(--text-dim); font-size: 0.9rem;">
         <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <img src="<?php echo htmlspecialchars($site_logo); ?>" style="width: 24px; border-radius: 50%;"> <b style="color:white;">FbReels Pro</b>
+            <img src="<?php echo htmlspecialchars($site_logo); ?>" style="height: 42px; width: auto; background: white; padding: 5px; border-radius: 6px;"> 
+            <!--
+            <b style="color:white;">FbReels Pro</b>
+            -->
         </div>
         <p>&copy; <?php echo date('Y'); ?> Công cụ hỗ trợ Shopee Affiliate & Facebook Reels.</p>
     </footer>
