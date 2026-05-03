@@ -49,7 +49,16 @@ function callRemoteAPI($endpoint, $data = []) {
         return ['success' => false, 'message' => 'Lỗi kết nối API: ' . $error];
     }
 
-    $result = json_decode($response, true);
+    // Xử lý để lấy đúng phần JSON nếu có thông báo rác (PHP Notice/Warning) đính kèm
+    $json_start = strpos($response, '{');
+    $json_end = strrpos($response, '}');
+    if ($json_start !== false && $json_end !== false) {
+        $clean_json = substr($response, $json_start, $json_end - $json_start + 1);
+        $result = json_decode($clean_json, true);
+    } else {
+        $result = json_decode($response, true);
+    }
+
     if (!$result) {
         return [
             'success' => false, 
