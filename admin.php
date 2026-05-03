@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.0.6';
+$current_version = '2.0.7';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -642,7 +642,7 @@ function buildQuery($overrides = []) {
         <div style="width: 45px; height: 45px; background: #f97316; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);">⚠️</div>
         <div style="flex: 1;">
             <h4 style="margin: 0; color: #9a3412; font-size: 1rem;">Cảnh báo hệ thống API</h4>
-            <p style="margin: 3px 0 0; color: #c2410c; font-size: 0.85rem;"><?php echo $api_warning; ?></p>
+            <p style="margin: 3px 0 0; color: #c2410c; font-size: 0.85rem;"><?php echo strip_tags($api_warning, '<a>'); ?></p>
         </div>
         <a href="settings.php" class="admin-settings-save" style="background: #f97316; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; color: white;">Gia hạn / Đổi Key</a>
     </div>
