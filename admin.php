@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.0.4';
+$current_version = '2.0.5';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -299,9 +299,8 @@ if ($is_logged_in) {
         require_once __DIR__ . '/remote_api_helper.php';
         $api_res = smartCheckAPIStatus();
         if (isset($api_res['success']) && !$api_res['success']) {
-            if (stripos($api_res['message'], 'limit') !== false || stripos($api_res['message'], 'hết lượt') !== false || stripos($api_res['message'], 'API Key') !== false) {
-                $api_warning = $api_res['message'];
-            }
+            // Hiển thị mọi thông báo lỗi từ API (hết lượt, bị chặn, lỗi key, v.v.)
+            $api_warning = $api_res['message'];
         }
     }
 
