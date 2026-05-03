@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.1.0';
+$current_version = '2.1.1';
 if (file_exists(__DIR__ . '/version.json')) {
     $v_data = json_decode(file_get_contents(__DIR__ . '/version.json'), true);
     if (!empty($v_data['version'])) $current_version = $v_data['version'];
