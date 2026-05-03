@@ -196,7 +196,7 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged_in) {
     header('Content-Type: application/json');
     // Cache busting cho API GitHub
-    $repo_api_url = "https://api.github.com/repos/benaasia/affreels/contents/?t=" . time();
+    $repo_api_url = "https://api.github.com/repos/benaasia/affreels/contents?t=" . time();
     $raw_base_url = "https://raw.githubusercontent.com/benaasia/affreels/main/";
     
     $ch = curl_init();
@@ -204,9 +204,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 20);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'User-Agent: PHP-Update-Checker',
+        'User-Agent: FbReels-Pro-Updater',
         'Accept: application/vnd.github.v3+json'
     ]);
     
@@ -215,10 +216,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
     $curl_error = curl_error($ch);
     curl_close($ch);
 
-    if ($remote_files === false || $http_code !== 200) {
-        $msg = 'Không thể kết nối đến máy chủ cập nhật.';
-        if ($http_code === 403) $msg = 'GitHub API bị giới hạn lượt gọi (Rate Limit). Vui lòng thử lại sau 1 giờ.';
-        elseif ($curl_error) $msg .= ' (Lỗi: ' . $curl_error . ')';
+    if ($http_code !== 200) {
+        $msg = "Không thể kết nối đến máy chủ cập nhật (HTTP $http_code).";
+        if ($http_code === 403) $msg = 'GitHub API bị giới hạn (Rate Limit). Vui lòng thử lại sau 1 giờ.';
+        elseif ($http_code === 404) $msg = 'Không tìm thấy Repo hoặc Folder trên GitHub.';
+        elseif ($curl_error) $msg .= ' - Lỗi: ' . $curl_error;
         echo json_encode(['success' => false, 'message' => $msg]); exit;
     }
     
@@ -250,8 +252,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
             curl_setopt($fch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($fch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($fch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($fch, CURLOPT_TIMEOUT, 20);
-            curl_setopt($fch, CURLOPT_USERAGENT, 'PHP-Downloader');
+            curl_setopt($fch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($fch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($fch, CURLOPT_USERAGENT, 'FbReels-Pro-Downloader');
             
             $content = curl_exec($fch);
             $f_http_code = curl_getinfo($fch, CURLINFO_HTTP_CODE);
