@@ -38,7 +38,7 @@ function setSetting($db, $key, $value) {
 }
 
 $remote_api_key = trim(getSetting($db, 'remote_api_key', 'FREE-85C45DDDBF3CEADB'));
-$remote_api_url = trim(getSetting($db, 'remote_api_url', 'https://tikaff.net/api/v1'));
+$remote_api_url = trim(getSetting($db, 'remote_api_url', 'https://app.affreel.com/v1'));
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
 if (empty($remote_api_key) && !$is_ajax && !isset($_POST['save_branding']) && !isset($_POST['remote_api_key'])) {
