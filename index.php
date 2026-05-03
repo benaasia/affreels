@@ -562,7 +562,6 @@ try {
         </div>
     </div>
     <?php endif; ?>
-
     <script>
     function toggleLinkDetails() {
         const details = document.getElementById('link-details-section');
