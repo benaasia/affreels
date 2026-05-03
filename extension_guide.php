@@ -17,8 +17,10 @@ try {
         if (isset($settings_tmp['site_title'])) $site_title = $settings_tmp['site_title'];
         if (isset($settings_tmp['site_logo'])) $site_logo = $settings_tmp['site_logo'];
         if (isset($settings_tmp['site_favicon'])) $site_favicon = $settings_tmp['site_favicon'];
+        if (isset($settings_tmp['site_gtag_id'])) $site_gtag_id = $settings_tmp['site_gtag_id'];
     }
 } catch (Exception $e) {}
+$site_gtag_id = $site_gtag_id ?? '';
 
 $chrome_link = "https://1links.cc/reelslink-pro-extractor";
 $firefox_link = "https://1links.cc/reelslink-pro-extractor-firefox";
@@ -31,6 +33,17 @@ $firefox_link = "https://1links.cc/reelslink-pro-extractor-firefox";
     <title>Hướng dẫn cài đặt Extension - <?php echo htmlspecialchars($site_title); ?></title>
     <meta name="description" content="Hướng dẫn cài đặt Extension trình trích xuất link Shopee Affiliate từ Facebook Reels tự động.">
     <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($site_favicon); ?>">
+    <?php if (!empty($site_gtag_id)): ?>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($site_gtag_id); ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '<?php echo htmlspecialchars($site_gtag_id); ?>');
+    </script>
+    <?php endif; ?>
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>

@@ -1,18 +1,58 @@
 <?php
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-$base_url = $protocol . "://" . $_SERVER['HTTP_HOST'];
+$landing_url = $protocol . "://" . $_SERVER['HTTP_HOST'];
+
+$branding = [
+    'site_title' => 'FbReels Pro',
+    'site_logo' => $landing_url . '/image/logo.png',
+    'site_favicon' => $landing_url . '/image/favicon.png',
+    'site_gtag_id' => ''
+];
+
+$func_path = __DIR__ . '/../functions.php';
+if (file_exists($func_path)) {
+    require_once $func_path;
+    try {
+        $db = get_db_connection();
+        if ($db) {
+            $stmt = $db->query("SELECT key, value FROM settings");
+            $settings_data = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+            if (isset($settings_data['site_title']) && $settings_data['site_title'] !== '') $branding['site_title'] = $settings_data['site_title'];
+            if (isset($settings_data['site_logo']) && $settings_data['site_logo'] !== '') $branding['site_logo'] = $settings_data['site_logo'];
+            if (isset($settings_data['site_favicon']) && $settings_data['site_favicon'] !== '') $branding['site_favicon'] = $settings_data['site_favicon'];
+            if (isset($settings_data['site_gtag_id'])) $branding['site_gtag_id'] = $settings_data['site_gtag_id'];
+        }
+    } catch (Exception $e) {}
+}
+
+$site_title = $branding['site_title'];
+$site_logo = (strpos($branding['site_logo'], 'http') === 0) ? $branding['site_logo'] : '../' . ltrim($branding['site_logo'], '/');
+$site_favicon = (strpos($branding['site_favicon'], 'http') === 0) ? $branding['site_favicon'] : '../' . ltrim($branding['site_favicon'], '/');
+$site_gtag_id = $branding['site_gtag_id'];
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Chính sách quyền riêng tư của ReelsLink Pro.">
+    <meta name="description" content="Chính sách quyền riêng tư của <?php echo htmlspecialchars($site_title); ?>.">
     <meta name="robots" content="noindex, follow">
-    <title>Privacy Policy - ReelsLink Pro</title>
+    <title>Privacy Policy - <?php echo htmlspecialchars($site_title); ?></title>
+    
+    <?php if (!empty($site_gtag_id)): ?>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($site_gtag_id); ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '<?php echo htmlspecialchars($site_gtag_id); ?>');
+    </script>
+    <?php endif; ?>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($site_favicon); ?>">
     
     <style>
         :root {
@@ -148,8 +188,8 @@ $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'];
 
     <nav class="glass" id="navbar">
         <a href="index.php" class="logo">
-            <img src="../image/favicon.png" alt="ReelsLink Pro Logo">
-            <span>ReelsLink Pro</span>
+            <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo">
+            <span><?php echo htmlspecialchars($site_title); ?></span>
         </a>
         <div class="nav-links">
             <a href="index.php">Quay lại trang chủ</a>
@@ -158,12 +198,12 @@ $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'];
 
     <section class="hero">
         <h1 class="text-gradient">Chính Sách Quyền Riêng Tư</h1>
-        <p style="color: var(--text-dim); max-width: 600px;">Cập nhật lần cuối: Năm 2026. Chức năng bảo mật và quyền riêng tư của bạn là ưu tiên hàng đầu. Tiện ích ReelsLink Pro Extractor được thiết kế với tiêu chuẩn an toàn cao nhất.</p>
+        <p style="color: var(--text-dim); max-width: 600px;">Cập nhật lần cuối: Năm <?php echo date('Y'); ?>. Chức năng bảo mật và quyền riêng tư của bạn là ưu tiên hàng đầu. Tiện ích <?php echo htmlspecialchars($site_title); ?> Extractor được thiết kế với tiêu chuẩn an toàn cao nhất.</p>
     </section>
 
     <div class="card glass">
         <h3>1. Thông tin chúng tôi thu thập</h3>
-        <p>ReelsLink Pro Extractor ("Tiện ích") chỉ truy cập đường dẫn mạng (URL) của Tab đang mở để trích xuất đường link Shopee Affiliate hoặc Tracking ID. Chúng tôi <strong>tuyệt đối không</strong> thu thập, lưu trữ hay truyền tải dữ liệu cá nhân cá nhân, thông tin đăng nhập Facebook hay lịch sử duyệt web của bạn tới bất kỳ máy chủ bên thứ ba nào.</p>
+        <p><?php echo htmlspecialchars($site_title); ?> Extractor ("Tiện ích") chỉ truy cập đường dẫn mạng (URL) của Tab đang mở để trích xuất đường link Shopee Affiliate hoặc Tracking ID. Chúng tôi <strong>tuyệt đối không</strong> thu thập, lưu trữ hay truyền tải dữ liệu cá nhân cá nhân, thông tin đăng nhập Facebook hay lịch sử duyệt web của bạn tới bất kỳ máy chủ bên thứ ba nào.</p>
         
         <h3>2. Cách chúng tôi sử dụng thông tin</h3>
         <p>Các đường link Affiliate trích xuất được sẽ gửi trực tiếp về máy chủ nội bộ cấu hình riêng của bạn (Ví dụ: app.affreel.com) để tạo rút gọn tự động. Quá trình này tuyệt đối chỉ dùng cho mục đích rút gọn và thống kê Click nội bộ dưới sự cho phép cấp quyền của bạn.</p>
@@ -185,7 +225,7 @@ $base_url = $protocol . "://" . $_SERVER['HTTP_HOST'];
     <!-- Footer -->
     <footer style="border-top: 1px solid var(--border); padding: 40px 20px; text-align: center; color: var(--text-dim); font-size: 0.9rem;">
         <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <img src="../image/favicon.png" style="width: 24px; border-radius: 50%;"> <b style="color:white; font-family:'Plus Jakarta Sans'">ReelsLink Pro</b>
+            <img src="<?php echo htmlspecialchars($site_logo); ?>" style="width: 24px; border-radius: 50%;"> <b style="color:white; font-family:'Plus Jakarta Sans'"><?php echo htmlspecialchars($site_title); ?></b>
         </div>
         <p>&copy; <?php echo date('Y'); ?> Trình trích xuất Shopee Affiliate nội quyền.</p>
     </footer>

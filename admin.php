@@ -186,6 +186,7 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting($db, 'site_og_image', trim($_POST['site_og_image'] ?? ''));
         setSetting($db, 'site_video_url', trim($_POST['site_video_url'] ?? ''));
         setSetting($db, 'site_fb_token', trim($_POST['site_fb_token'] ?? ''));
+        setSetting($db, 'site_gtag_id', trim($_POST['site_gtag_id'] ?? ''));
 
         // Modal Settings
         setSetting($db, 'modal_enabled', trim($_POST['modal_enabled'] ?? '0'));
@@ -708,6 +709,19 @@ function buildQuery($overrides = []) {
             </div>
         </div>
 
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Google Analytics ID</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <input type="text" id="site-gtag_id" value="<?php echo htmlspecialchars(getSetting($db, 'site_gtag_id', '')); ?>" placeholder="Ví dụ: G-2J658TM292" class="admin-settings-input">
+                <small style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 10px; border-left: 3px solid var(--primary);">
+                    <strong>💡 Cách lấy mã theo dõi:</strong><br>
+                    1. Truy cập <a href="https://analytics.google.com/" target="_blank" style="color: var(--primary); font-weight: bold;">Google Analytics</a>.<br>
+                    2. Đi tới <b>Quản trị (Admin) &gt; Luồng dữ liệu (Data Streams)</b>.<br>
+                    3. Chọn luồng web của bạn và copy <b>Mã đo lường (Measurement ID)</b> có dạng <code>G-XXXXXXXXXX</code>.
+                </small>
+            </div>
+        </div>
+
         <div class="admin-settings-row" style="background: rgba(16, 185, 129, 0.03); padding: 20px; border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3); margin-top: 15px;">
             <div class="admin-settings-label" style="color: #10b981; font-weight: 700; font-size: 1rem;"><i class="fas fa-qrcode"></i> QR Donate (Cá nhân)</div>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
@@ -1213,6 +1227,7 @@ function saveBranding() {
     fd.append('site_og_image', document.getElementById('site-og-image').value.trim());
     fd.append('site_video_url', document.getElementById('site-video-url').value.trim());
     fd.append('site_fb_token', document.getElementById('site-fb-token').value.trim());
+    fd.append('site_gtag_id', document.getElementById('site-gtag_id').value.trim());
 
     // Modal settings
     fd.append('modal_enabled', document.getElementById('modal-enabled').checked ? '1' : '0');

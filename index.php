@@ -274,7 +274,9 @@ try {
     if (isset($settings_tmp['site_author'])) $site_author = $settings_tmp['site_author'];
     if (isset($settings_tmp['site_logo'])) $site_logo = $settings_tmp['site_logo'];
     if (isset($settings_tmp['site_favicon'])) $site_favicon = $settings_tmp['site_favicon'];
+    if (isset($settings_tmp['site_gtag_id'])) $site_gtag_id = $settings_tmp['site_gtag_id'];
 } catch (Exception $e) {}
+$site_gtag_id = $site_gtag_id ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -286,13 +288,17 @@ try {
     <meta name="keywords" content="<?php echo htmlspecialchars($site_keywords); ?>">
     <meta name="author" content="<?php echo htmlspecialchars($site_author); ?>">
     <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($site_favicon); ?>">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XX8CW4JJHN"></script>
+    <?php if (!empty($site_gtag_id)): ?>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($site_gtag_id); ?>"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-XX8CW4JJHN');
+
+      gtag('config', '<?php echo htmlspecialchars($site_gtag_id); ?>');
     </script>
+    <?php endif; ?>
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?php echo $base_url; ?>">
     <meta property="og:title" content="<?php echo htmlspecialchars($site_title); ?>">
