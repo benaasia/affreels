@@ -336,16 +336,8 @@ if ($is_logged_in) {
     $total_links = $row['total'];
     $total_clicks = $row['clicks'];
 
-    // Kiểm tra trạng thái API khi ở Dashboard
-    $api_warning = '';
-    if ($tab === 'dashboard' && file_exists(__DIR__ . '/remote_api_helper.php')) {
-        require_once __DIR__ . '/remote_api_helper.php';
-        $api_res = smartCheckAPIStatus();
-        if (isset($api_res['success']) && !$api_res['success']) {
-            // Hiển thị mọi thông báo lỗi từ API (hết lượt, bị chặn, lỗi key, v.v.)
-            $api_warning = $api_res['message'];
-        }
-    }
+    // Kiểm tra trạng thái API khi ở Dashboard (Chuyển sang AJAX để nhanh hơn)
+    $api_warning = ''; 
 
     if ($tab === 'dashboard') {
         $order = 'created_at DESC';
@@ -860,23 +852,8 @@ function buildQuery($overrides = []) {
 <?php else: ?>
 
     <div class="admin-banners-grid">
-    <?php if (!empty($api_warning)): ?>
-    <div class="admin-banner-card admin-banner-warning mini">
-        <div class="admin-banner-content">
-            <div class="admin-banner-header">
-                <div class="admin-banner-title-group">
-                    <div class="admin-banner-icon">⚠️</div>
-                    <h4>Hệ thống API</h4>
-                </div>
-            </div>
-            <p><?php echo strip_tags($api_warning, '<a>'); ?></p>
-            <div class="admin-banner-actions">
-                <a href="settings.php" class="admin-banner-btn">Gia hạn / Đổi Key</a>
-            </div>
-        </div>
-    </div>
-    <style> @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } } </style>
-    <?php endif; ?>
+    <div id="api-status-async"></div>
+
 
     <?php if ($is_default_password): ?>
     <div class="admin-banner-card admin-banner-danger mini">
@@ -1465,6 +1442,36 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
 
     // Tự động kiểm tra khi load
     checkUpdates();
+    
+    // Kiểm tra trạng thái API bất đồng bộ
+    <?php if ($tab === 'dashboard'): ?>
+    fetch('../ajax_check_api.php')
+        .then(r => r.json())
+        .then(data => {
+            if (data && data.success === false) {
+                const container = document.getElementById('api-status-async');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="admin-banner-card admin-banner-warning mini" style="animation: slideDown 0.4s ease-out;">
+                            <div class="admin-banner-content">
+                                <div class="admin-banner-header">
+                                    <div class="admin-banner-title-group">
+                                        <div class="admin-banner-icon">⚠️</div>
+                                        <h4>Hệ thống API</h4>
+                                    </div>
+                                </div>
+                                <p>${data.message}</p>
+                                <div class="admin-banner-actions">
+                                    <a href="settings.php" class="admin-banner-btn">Gia hạn / Đổi Key</a>
+                                </div>
+                            </div>
+                        </div>
+                        <style> @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } } </style>
+                    `;
+                }
+            }
+        }).catch(err => console.log('API Check failed', err));
+    <?php endif; ?>
 
     // Hàm gọi thủ công từ Sidebar
     function manualCheckUpdate() {
