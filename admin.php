@@ -1169,7 +1169,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                     if (isManual) banner.scrollIntoView({ behavior: 'smooth' });
                 }
             } else if (isManual) {
-                showToast('✅ Hệ thống của bạn đã khớp hoàn toàn với GitHub.');
+                showToast('✅ Hệ thống đã ở phiên bản mới nhất.');
             }
 
             if (dot) {
