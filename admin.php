@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.0.5';
+$current_version = '2.0.6';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
