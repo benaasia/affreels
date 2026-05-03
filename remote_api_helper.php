@@ -14,13 +14,13 @@ function callRemoteAPI($endpoint, $data = []) {
             if (empty($remote_api_url)) {
                 $st = $db_temp->prepare("SELECT value FROM settings WHERE key = 'remote_api_url' LIMIT 1");
                 $st->execute(); $r = $st->fetch();
-                $remote_api_url = (!empty($r) && !empty($r['value'])) ? trim($r['value']) : 'https://tikaff.net/api/v1';
+                $remote_api_url = (!empty($r) && !empty($r['value'])) ? trim($r['value']) : 'https://app.affreel.com/v1';
             }
         } catch (Exception $e) {}
     }
 
     // Đảm bảo cuối cùng không bị trống
-    if (empty($remote_api_url)) $remote_api_url = 'https://tikaff.net/api/v1';
+    if (empty($remote_api_url)) $remote_api_url = 'https://app.affreel.com/v1';
     if (empty($remote_api_key)) $remote_api_key = 'FREE-85C45DDDBF3CEADB';
 
     $url = rtrim($remote_api_url, '/') . '/' . ltrim($endpoint, '/');
@@ -51,7 +51,10 @@ function callRemoteAPI($endpoint, $data = []) {
 
     $result = json_decode($response, true);
     if (!$result) {
-        return ['success' => false, 'message' => 'Phản hồi từ Server không hợp lệ (JSON Error).'];
+        return [
+            'success' => false, 
+            'message' => 'Phản hồi từ Server không hợp lệ (JSON Error). Nội dung nhận được: ' . substr(strip_tags($response), 0, 100) . '...'
+        ];
     }
 
     return $result;
