@@ -845,52 +845,65 @@ function buildQuery($overrides = []) {
 
 <?php else: ?>
 
+    <div class="admin-banners-grid">
     <?php if (!empty($api_warning)): ?>
-    <div class="admin-settings-card" style="background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1px solid #fdba74; margin-bottom: 1.5rem; padding: 1.2rem; border-radius: 12px; display: flex; align-items: center; gap: 15px; animation: slideDown 0.4s ease-out;">
-        <div style="width: 45px; height: 45px; background: #f97316; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);">⚠️</div>
-        <div style="flex: 1;">
-            <h4 style="margin: 0; color: #9a3412; font-size: 1rem;">Cảnh báo hệ thống API</h4>
-            <p style="margin: 3px 0 0; color: #c2410c; font-size: 0.85rem;"><?php echo strip_tags($api_warning, '<a>'); ?></p>
+    <div class="admin-banner-card admin-banner-warning mini">
+        <div class="admin-banner-content">
+            <div class="admin-banner-header">
+                <div class="admin-banner-title-group">
+                    <div class="admin-banner-icon">⚠️</div>
+                    <h4>Hệ thống API</h4>
+                </div>
+            </div>
+            <p><?php echo strip_tags($api_warning, '<a>'); ?></p>
+            <div class="admin-banner-actions">
+                <a href="settings.php" class="admin-banner-btn">Gia hạn / Đổi Key</a>
+            </div>
         </div>
-        <a href="settings.php" class="admin-settings-save" style="background: #f97316; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; color: white;">Gia hạn / Đổi Key</a>
     </div>
     <style> @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } } </style>
     <?php endif; ?>
 
     <?php if ($is_default_password): ?>
-    <div class="admin-settings-card" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; margin-bottom: 1.5rem; padding: 1.2rem; border-radius: 12px; display: flex; align-items: center; gap: 15px; animation: slideDown 0.4s ease-out;">
-        <div style="width: 45px; height: 45px; background: #ef4444; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);">🛡️</div>
-        <div style="flex: 1;">
-            <h4 style="margin: 0; color: #991b1b; font-size: 1rem;">Cảnh báo bảo mật</h4>
-            <p style="margin: 3px 0 0; color: #b91c1c; font-size: 0.85rem;">Bạn đang sử dụng mật khẩu mặc định (admin123). Vui lòng đổi mật khẩu ngay để bảo vệ hệ thống!</p>
+    <div class="admin-banner-card admin-banner-danger mini">
+        <div class="admin-banner-content">
+            <div class="admin-banner-header">
+                <div class="admin-banner-title-group">
+                    <div class="admin-banner-icon">🛡️</div>
+                    <h4>Bảo mật</h4>
+                </div>
+            </div>
+            <p>Đang dùng mật khẩu mặc định (admin123).</p>
+            <div class="admin-banner-actions">
+                <button onclick="openPasswordModal()" class="admin-banner-btn">Đổi mật khẩu ngay</button>
+            </div>
         </div>
-        <button onclick="openPasswordModal()" class="admin-settings-save" style="background: #ef4444; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; color: white; cursor: pointer;">Đổi mật khẩu ngay</button>
     </div>
     <?php endif; ?>
 
     <!-- Update Notification (Hidden by default) -->
-    <div id="update-banner" class="admin-settings-card" style="display:none; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 1.5rem; position: relative; overflow: hidden; padding: 1.5rem; border-radius: 16px;">
-        <div style="position: absolute; top: -10px; right: -10px; opacity: 0.1; transform: rotate(15deg);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        </div>
-        <div style="display: flex; align-items: center; gap: 15px; position: relative; z-index: 1;">
-            <div style="width: 45px; height: 45px; background: #6366f1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">🚀</div>
-            <div style="flex: 1;">
-                <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">Đã có phiên bản mới: <span id="new-version-tag" style="background: #ef4444; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; margin-left: 5px;">v0.0.0</span></h3>
-                <p id="update-changelog" style="margin: 5px 0 0; font-size: 0.85rem; color: #94a3b8;">Hệ thống phát hiện bản cập nhật mới trên GitHub. Vui lòng cập nhật để sử dụng các tính năng mới nhất.</p>
+    <div id="update-banner" class="admin-banner-card admin-banner-update mini" style="display:none;">
+        <div class="admin-banner-content">
+            <div class="admin-banner-header">
+                <div class="admin-banner-title-group">
+                    <div class="admin-banner-icon">🚀</div>
+                    <h3>Cập nhật: <span id="new-version-tag">v0.0.0</span></h3>
+                </div>
             </div>
-            <div id="update-actions" style="display: flex; gap: 10px;">
-                <button onclick="runSmartUpdate()" id="update-btn" class="admin-settings-save" style="background: #6366f1; text-decoration: none; margin: 0; padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; color: white;">
+            <p id="update-changelog">Phát hiện bản cập nhật mới trên GitHub.</p>
+            <div class="admin-banner-actions">
+                <button onclick="runSmartUpdate()" id="update-btn" class="admin-banner-btn primary">
                     <svg id="update-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    <span id="update-text">Cập nhật ngay</span>
+                    <span>Cập nhật</span>
                 </button>
-                <a href="https://github.com/benaasia/affreels" target="_blank" style="background: rgba(255,255,255,0.1); text-decoration: none; padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; border-radius: 8px; color: white; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem; transition: all 0.3s;">
+                <a href="https://github.com/benaasia/affreels" target="_blank" class="admin-banner-btn secondary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
                     Chi tiết
                 </a>
             </div>
         </div>
     </div>
+    </div> <!-- End admin-banners-grid -->
 
     <div class="admin-stats-grid">
         <div class="admin-stat-card">
@@ -931,7 +944,7 @@ function buildQuery($overrides = []) {
             <?php endif; ?>
         </form>
         <div class="admin-sort-group">
-            <button id="bulk-delete-btn" class="admin-action-btn admin-btn-delete" style="display:none; margin-right: 15px; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; align-items: center; gap: 5px; cursor: pointer; color: white; background-color: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5);" onclick="bulkDelete()">
+            <button id="bulk-delete-btn" class="admin-action-btn admin-btn-delete" style="display:none; margin-right: 15px;" onclick="bulkDelete()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Xóa đã chọn (<span id="bulk-count">0</span>)
             </button>
