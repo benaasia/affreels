@@ -545,7 +545,7 @@ function buildQuery($overrides = []) {
         </div>
 
         <div class="admin-settings-row">
-            <div class="admin-settings-label">Video Hướng Dẫn</div>
+            <div class="admin-settings-label">Video Hướng Dẫn <span style="font-size: 0.75rem; color: #94a3b8; font-weight: normal; margin-left: 5px;">(Hiển thị ở Landing)</span></div>
             <input type="url" id="site-video-url" value="<?php echo htmlspecialchars(getSetting($db, 'site_video_url', 'https://www.youtube.com/shorts/nj7U1OcOaX0')); ?>" placeholder="Link video YouTube..." class="admin-settings-input">
         </div>
 
