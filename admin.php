@@ -210,6 +210,14 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // --- Smart Update Handler ---
 if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged_in) {
     header('Content-Type: application/json');
+    set_time_limit(180); // Tăng giới hạn thời gian xử lý cho nhiều file
+    
+    // Tự động xác định thư mục đích (nếu đang chạy trong thư mục temp thì đích là thư mục gốc)
+    $target_base_dir = __DIR__;
+    if (basename(__DIR__) === 'temp') {
+        $target_base_dir = dirname(__DIR__);
+    }
+    
     // Cache busting cho API GitHub
     $repo_api_url = "https://api.github.com/repos/benaasia/affreels/contents?t=" . time();
     $raw_base_url = "https://raw.githubusercontent.com/benaasia/affreels/main/";
@@ -248,7 +256,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
         $filename = $file['name'];
         if (in_array($filename, $skipped_files)) continue;
         
-        $local_path = __DIR__ . DIRECTORY_SEPARATOR . $filename;
+        $local_path = $target_base_dir . DIRECTORY_SEPARATOR . $filename;
         $remote_sha = $file['sha'];
         
         $should_update = true;
@@ -302,7 +310,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'check_sha_update' && $is_lo
         $filename = $file['name'];
         if (in_array($filename, $skipped_files)) continue;
 
-        $local_path = __DIR__ . DIRECTORY_SEPARATOR . $filename;
+        $target_base_dir = __DIR__;
+        if (basename(__DIR__) === 'temp') {
+            $target_base_dir = dirname(__DIR__);
+        }
+        $local_path = $target_base_dir . DIRECTORY_SEPARATOR . $filename;
         if (!file_exists($local_path)) {
             $has_update = true; break;
         }
