@@ -3,6 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
+$current_version = '1.0.0';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -529,6 +530,24 @@ function buildQuery($overrides = []) {
 
 <?php else: ?>
 
+    <!-- Update Notification (Hidden by default) -->
+    <div id="update-banner" class="admin-settings-card" style="display:none; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 1.5rem; position: relative; overflow: hidden; padding: 1.5rem; border-radius: 16px;">
+        <div style="position: absolute; top: -10px; right: -10px; opacity: 0.1; transform: rotate(15deg);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px; position: relative; z-index: 1;">
+            <div style="width: 45px; height: 45px; background: #6366f1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">🚀</div>
+            <div style="flex: 1;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">Đã có phiên bản mới: <span id="new-version-tag" style="background: #ef4444; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; margin-left: 5px;">v0.0.0</span></h3>
+                <p id="update-changelog" style="margin: 5px 0 0; font-size: 0.85rem; color: #94a3b8;">Hệ thống phát hiện bản cập nhật mới trên GitHub. Vui lòng cập nhật để sử dụng các tính năng mới nhất.</p>
+            </div>
+            <a href="https://github.com/benaasia/affreels" target="_blank" class="admin-settings-save" style="background: #6366f1; text-decoration: none; margin: 0; padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; border-radius: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                Tải về
+            </a>
+        </div>
+    </div>
+
     <div class="admin-stats-grid">
         <div class="admin-stat-card">
             <div class="admin-stat-icon" style="background: linear-gradient(135deg, #6366f1, #818cf8);">
@@ -971,6 +990,28 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
         document.getElementById('adminSidebar').classList.toggle('active');
         document.getElementById('sidebarOverlay').classList.toggle('active');
     }
+
+    // Update Checker for dist_client
+    (function checkUpdates() {
+        const currentVersion = "<?php echo $current_version; ?>";
+        const repoUrl = "https://raw.githubusercontent.com/benaasia/affreels/main/version.json";
+        
+        fetch(repoUrl)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.version && data.version !== currentVersion) {
+                    const banner = document.getElementById('update-banner');
+                    if (banner) {
+                        document.getElementById('new-version-tag').textContent = 'v' + data.version;
+                        if (data.changelog) {
+                            document.getElementById('update-changelog').textContent = data.changelog;
+                        }
+                        banner.style.display = 'block';
+                    }
+                }
+            })
+            .catch(err => console.log("Update check failed:", err));
+    })();
     </script>
 </body>
 </html>
