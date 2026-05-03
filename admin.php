@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.0.2';
+$current_version = '2.0.3';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -1065,7 +1065,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
     // Update Checker for dist_client
     (function checkUpdates() {
         const currentVersion = "<?php echo $current_version; ?>";
-        const repoUrl = "https://raw.githubusercontent.com/benaasia/affreels/main/version.json";
+        // Thêm tham số thời gian để tránh bị cache bởi trình duyệt hoặc GitHub CDN
+        const repoUrl = "https://raw.githubusercontent.com/benaasia/affreels/main/version.json?t=" + Date.now();
         
         fetch(repoUrl)
             .then(res => res.json())
