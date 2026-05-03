@@ -3,10 +3,11 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.1.1';
+// Lấy phiên bản hiện tại từ file version.json một cách tự động
+$current_version = '2.1.1'; // Đây là số dự phòng nếu không tìm thấy file
 if (file_exists(__DIR__ . '/version.json')) {
-    $v_data = json_decode(file_get_contents(__DIR__ . '/version.json'), true);
-    if (!empty($v_data['version'])) $current_version = $v_data['version'];
+    $v_data = json_decode(preg_replace('/^[\xEF\xBB\xBF\xFE\xFF\xFF\xFE]*/', '', file_get_contents(__DIR__ . '/version.json')), true);
+    if (!empty($v_data['version'])) $current_version = trim($v_data['version']);
 }
 
 try {
