@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
         $full_url = smartGetFinalUrl($shopee_input);
         
         if (strpos($full_url, 'ERROR: ') === 0) {
-            echo json_encode(['success' => false, 'message' => substr($full_url, 7)]);
+            echo json_encode(['success' => false, 'message' => 'Hệ thống đang bảo trì hoặc gặp sự cố tạm thời. Vui lòng liên hệ Admin để được hỗ trợ!']);
             exit;
         }
 
@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
         if ($is_short && stripos($full_url, 'origin_link') === false) {
              $full_url = smartGetFinalUrl($full_url);
              if (strpos($full_url, 'ERROR: ') === 0) {
-                echo json_encode(['success' => false, 'message' => substr($full_url, 7)]);
+                echo json_encode(['success' => false, 'message' => 'Hệ thống đang bảo trì hoặc gặp sự cố tạm thời. Vui lòng liên hệ Admin để được hỗ trợ!']);
                 exit;
              }
         }
@@ -205,6 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
             $explicit_source = $contains_shopee ? '' : $raw_input;
         }
         $result['short_link'] = generateShortLink($result['link'], $db, $explicit_source, $result['affiliate_id'] ?? '');
+    } else {
+        $result['message'] = 'Hệ thống đang bảo trì hoặc gặp sự cố tạm thời. Vui lòng liên hệ Admin để được hỗ trợ!';
     }
     echo json_encode($result);
     exit;
