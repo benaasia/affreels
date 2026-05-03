@@ -715,7 +715,7 @@ function buildQuery($overrides = []) {
         </div>
 
         <div class="admin-settings-row" style="background: rgba(16, 185, 129, 0.03); padding: 20px; border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3); margin-top: 15px;">
-            <div class="admin-settings-label" style="color: #10b981; font-weight: 700; font-size: 1rem;"><i class="fas fa-qrcode"></i> QR Donate (Cá nhân)</div>
+            <div class="admin-settings-label" style="color: #10b981; font-weight: 700; font-size: 1rem;"><i class="fas fa-qrcode"></i> QR Donate</div>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                     <label class="admin-toggle-switch">
