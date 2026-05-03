@@ -55,6 +55,14 @@ if (empty($remote_api_key) && !$is_ajax && !isset($_POST['save_branding']) && !i
 
 if (isset($_GET['logout'])) { session_destroy(); header('Location: admin.php'); exit; }
 
+$is_default_password = false;
+$stmt_pw = $db->prepare("SELECT value FROM settings WHERE key = 'admin_password_hash'");
+$stmt_pw->execute();
+$pw_row_check = $stmt_pw->fetch(PDO::FETCH_ASSOC);
+if ($pw_row_check && password_verify(DEFAULT_PASSWORD, $pw_row_check['value'])) {
+    $is_default_password = true;
+}
+
 $login_error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_password'])
     && !isset($_POST['delete_slug']) && !isset($_POST['edit_slug'])
@@ -676,6 +684,17 @@ function buildQuery($overrides = []) {
         <a href="settings.php" class="admin-settings-save" style="background: #f97316; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; color: white;">Gia hạn / Đổi Key</a>
     </div>
     <style> @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } } </style>
+    <?php endif; ?>
+
+    <?php if ($is_default_password): ?>
+    <div class="admin-settings-card" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; margin-bottom: 1.5rem; padding: 1.2rem; border-radius: 12px; display: flex; align-items: center; gap: 15px; animation: slideDown 0.4s ease-out;">
+        <div style="width: 45px; height: 45px; background: #ef4444; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);">🛡️</div>
+        <div style="flex: 1;">
+            <h4 style="margin: 0; color: #991b1b; font-size: 1rem;">Cảnh báo bảo mật</h4>
+            <p style="margin: 3px 0 0; color: #b91c1c; font-size: 0.85rem;">Bạn đang sử dụng mật khẩu mặc định (admin123). Vui lòng đổi mật khẩu ngay để bảo vệ hệ thống!</p>
+        </div>
+        <button onclick="openPasswordModal()" class="admin-settings-save" style="background: #ef4444; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; color: white; cursor: pointer;">Đổi mật khẩu ngay</button>
+    </div>
     <?php endif; ?>
 
     <!-- Update Notification (Hidden by default) -->
