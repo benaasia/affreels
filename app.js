@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const themeToggle = document.getElementById('theme-toggle');
+    const themeToggles = document.querySelectorAll('.theme-toggle-btn');
     const body = document.body;
     
     function setTheme(theme) {
@@ -8,6 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             body.classList.remove('dark-mode');
         }
+        updateToggles(theme === 'dark');
+    }
+
+    function updateToggles(isDark) {
+        themeToggles.forEach(btn => {
+            const icon = btn.querySelector('.theme-icon');
+            if (icon) icon.textContent = isDark ? '🌙' : '☀️';
+        });
     }
 
     let savedTheme = localStorage.getItem('theme');
@@ -19,13 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTheme(savedTheme);
 
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
+    themeToggles.forEach(btn => {
+        btn.addEventListener('click', () => {
             const isNowDark = !body.classList.contains('dark-mode');
             setTheme(isNowDark ? 'dark' : 'light');
             localStorage.setItem('theme', isNowDark ? 'dark' : 'light');
         });
-    }
+    });
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         if (!localStorage.getItem('theme')) {

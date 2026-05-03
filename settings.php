@@ -55,13 +55,32 @@ $qr_url = isset($settings['master_donate_qr_url']) ? $settings['master_donate_qr
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        .container {
+            max-width: 500px;
+            margin: 60px auto;
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .hero {
+            text-align: center;
+            margin-bottom: 10px;
+        }
         .settings-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             padding: 2.5rem;
             border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            animation: fadeInUp 1s ease-out;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .form-group {
             margin-bottom: 1.5rem;
@@ -172,8 +191,7 @@ $qr_url = isset($settings['master_donate_qr_url']) ? $settings['master_donate_qr
         <div class="hero">
             <h1 style="display: flex; align-items: center; justify-content: center; gap: 12px;">
                 <a href="index.php" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: var(--primary);">
-                    <img src="image/favicon.png" alt="Logo" style="width: 48px; height: 48px; border-radius: 50%;"> 
-                    FbReels <span style="font-weight: 300; color: var(--text-main);">Pro</span>
+                    <img src="image/logo.png" alt="Logo" style="height: 48px; border-radius: 5%;">
                 </a>
             </h1>
             <!--

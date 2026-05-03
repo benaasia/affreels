@@ -301,28 +301,184 @@ try {
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>const REELSLINK_API_KEY = "<?php echo API_KEY; ?>";</script>
+    <style>
+        @media (max-width: 992px) {
+            /* Mobile Top Header */
+            .mobile-header {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding: 15px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                z-index: 1001;
+                background: transparent;
+            }
+            .mobile-logo img {
+                height: 38px;
+                width: auto;
+                object-fit: contain;
+            }
+            .mobile-header-right {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .mobile-settings-btn {
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+                border: 1px solid var(--border-color);
+                width: 42px !important;
+                height: 42px !important;
+                min-width: 42px !important;
+                max-width: 42px !important;
+                border-radius: 12px;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-main);
+                cursor: pointer;
+                flex: 0 0 42px !important;
+                padding: 0;
+                margin: 0;
+                position: relative;
+            }
+            .mobile-settings-btn i {
+                font-size: 1.3rem;
+            }
+
+            .app-sidebar { 
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                top: auto;
+                width: 100%; 
+                height: 65px; 
+                flex-direction: row; 
+                padding: 0 10px; 
+                margin: 0;
+                overflow: visible;
+                border-right: none;
+                border-top: 1px solid var(--border-color);
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(30px);
+                -webkit-backdrop-filter: blur(30px);
+                z-index: 1000;
+                justify-content: space-around;
+                align-items: center;
+            }
+            .sidebar-brand, .sidebar-footer, .nav-label { display: none !important; }
+            .sidebar-nav { display: flex; width: 100%; height: 100%; justify-content: space-around; align-items: center; gap: 10px; }
+            .nav-btn { 
+                flex: 1;
+                height: 45px;
+                flex-direction: row !important; 
+                justify-content: center !important; 
+                align-items: center !important;
+                gap: 8px !important;
+                padding: 0 10px !important; 
+                margin: 0 !important;
+                font-size: 0.8rem !important; 
+                border-radius: 12px;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+            .nav-btn[data-tab="setup"] { display: none !important; }
+            .nav-btn span { display: inline-block !important; margin: 0 !important; opacity: 1; white-space: nowrap; }
+            .nav-btn.active { background: var(--accent-gradient) !important; color: white !important; box-shadow: 0 4px 12px var(--primary-glow) !important; }
+            .nav-btn.active span { font-weight: 700; }
+            .nav-btn i, .nav-icon-svg { font-size: 1.1rem !important; width: auto !important; }
+            .main-content-scroll { padding: 70px 1rem 80px 1rem !important; }
+            .hide-on-mobile { display: none !important; }
+            .show-on-mobile { display: inline-block !important; }
+        }
+        .mobile-header { display: none; }
+        @media (max-width: 992px) {
+            .mobile-header { display: flex; }
+        }
+        .show-on-mobile { display: none; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="hero">
-            <button id="theme-toggle" class="theme-toggle-btn" title="Chuyển chế độ Sáng/Tối">
-                <span class="theme-icon">🌙</span>
-            </button>
-            <h1 style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-                <a href="index.php" class="logo" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: var(--primary);">
-                    <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo" style="width: 48px; height: 48px; border-radius: 50%;"> 
-                    <span><?php echo htmlspecialchars($site_title); ?></span>
-                </a>
-            </h1>
-            <p>Trích xuất Shopee Affiliate từ Facebook Reels!</p>
-        </div>
-
-        <div class="extractor-card <?php echo $auto_link ? 'auto-processing' : ''; ?>">
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="shopee">Link Shopee</button>
-                <button class="tab-btn" data-tab="fbreel">FB Reels</button>
-                <button class="tab-btn" data-tab="setup">Cài đặt ⚙️</button>
+    <div class="glass-bg-circles">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+    </div>
+    <div class="app-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo">
+                </div>
+                <!--
+                <div class="brand-info">
+                    <span class="brand-name"><?php echo htmlspecialchars($site_title); ?></span>
+                </div>
+                -->
             </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-label">Công cụ chính</div>
+                <button class="nav-btn tab-btn active" data-tab="shopee">
+                    <svg class="nav-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M19.14 7.42h-3.41V6.15c0-2.07-1.68-3.75-3.75-3.75S8.23 4.08 8.23 6.15v1.27H4.82c-1.12 0-2.03.91-2.03 2.03l-1.01 10.14c0 1.12.91 2.03 2.03 2.03h16.22c1.12 0 2.03-.91 2.03-2.03l-1.01-10.14c0-1.12-.91-2.03-2.03-2.03zm-8.88-1.27c0-.96.78-1.74 1.74-1.74s1.74.78 1.74 1.74v1.27h-3.48V6.15zm5.17 11.23c0 .33-.06.66-.19.95-.12.3-.3.56-.54.79-.23.23-.5.42-.81.56-.3.14-.64.21-.99.21-.48 0-.91-.12-1.3-.35s-.71-.56-.95-1l.92-.53c.16.3.36.52.62.67.25.15.53.22.84.22.18 0 .34-.03.5-.1.15-.07.28-.16.39-.28s.2-.26.26-.42c.06-.17.09-.35.09-.54 0-.17-.03-.33-.1-.47s-.17-.27-.3-.38-.28-.21-.46-.3-.38-.17-.61-.26c-.34-.12-.66-.26-.95-.42s-.54-.35-.74-.58c-.19-.23-.34-.49-.44-.79s-.15-.65-.15-1.05c0-.33.06-.64.19-.94s.3-.56.53-.78c.22-.22.49-.4.8-.52s.64-.19 1-.19c.4 0 .76.08 1.09.25s.61.39.84.67.4.59.5 1l-.9.42c-.12-.34-.28-.59-.5-.75-.21-.16-.48-.25-.8-.25-.15 0-.29.03-.43.08-.13.05-.24.13-.34.22s-.17.21-.23.34c-.05.13-.08.27-.08.43 0 .14.03.26.09.37s.14.21.25.3.23.18.38.25c.15.07.31.13.48.19.4.15.75.31 1.04.49s.54.39.73.63.32.51.41.81c.09.3.13.63.13.99z"></path>
+                    </svg>
+                    <span>
+                        <span class="hide-on-mobile">Link Shopee</span>
+                    </span>
+                </button>
+                <button class="nav-btn tab-btn" data-tab="fbreel">
+                    <i class="fab fa-facebook"></i> 
+                    <span>
+                        <span class="hide-on-mobile">Facebook Reels</span>
+                    </span>
+                </button>
+                
+                <div class="nav-label">Hệ thống</div>
+                <button class="nav-btn tab-btn" data-tab="setup">
+                    <i class="fas fa-cog"></i> <span>Cài đặt</span>
+                </button>
+                <a href="extension_guide.php" class="nav-btn hide-on-mobile">
+                    <i class="fas fa-puzzle-piece"></i> <span>Hướng dẫn Extension</span>
+                </a>
+                <a href="bookmarklet_guide.php" class="nav-btn hide-on-mobile">
+                    <i class="fas fa-magic"></i> <span>Hướng dẫn Bookmark</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="theme-toggle-inline theme-toggle-btn" title="Đổi màu">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+            <!-- Mobile Top Header -->
+            <div class="mobile-header">
+                <div class="mobile-logo">
+                    <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo">
+                </div>
+                <div class="mobile-header-right">
+                    <button class="mobile-settings-btn theme-toggle-btn" title="Đổi màu">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button class="mobile-settings-btn tab-btn" data-tab="setup" title="Cài đặt">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-content-scroll">
+                <div class="tool-container">
+
+                <div class="extractor-card <?php echo $auto_link ? 'auto-processing' : ''; ?>">
+                    <!-- Main tabs are now in the sidebar -->
 
             <div id="shopee-tab" class="tab-content active">
                 <div style="text-align: right; margin-bottom: 0.8rem;">
@@ -400,16 +556,6 @@ try {
                     </div>
 
                     <img src="image/affreel.gif" alt="Hướng dẫn setup" style="max-width: 85%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-                    
-                    <div style="margin-top: 1.2rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
-                        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <i class="fas fa-shield-alt"></i> Quản lý Bản quyền & API
-                        </div>
-                        <a href="settings.php" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.8rem 1.5rem; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            <i class="fas fa-key" style="color: var(--primary);"></i> Cấu hình API Key
-                        </a>
-                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.8rem;">Dành cho chủ sở hữu mã nguồn FbReels Pro.</p>
-                    </div>
                 </div>
             </div>
             
@@ -525,9 +671,20 @@ try {
                     <?php if($auto_link): ?>
                     <a href="index.php" style="display:block; text-align:center; margin-top:1.5rem; font-size:0.8rem; color:var(--primary); text-decoration:none;">← Quay lại</a>
                     <?php endif; ?>
+                </div> <!-- end extractor-card -->
+            </div> <!-- end tool-container -->
+
+            <footer class="app-footer">
+                <p>&copy; 2026 <?php echo htmlspecialchars($site_title); ?> &bull; Premium Affiliate Solution</p>
+                <!--
+                <div class="footer-links">
+                    <a href="#">Điều khoản</a>
+                    <a href="#">Bảo mật</a>
+                    <a href="https://t.me/rutgon_com_vn" target="_blank">Hỗ trợ</a>
                 </div>
-            </div>
-        </div>
+                -->
+            </footer>
+        </main>
     </div>
 
     <!-- Beta Testing Modal -->
@@ -543,10 +700,8 @@ try {
         $modal_button_url = $settings['modal_button_url'] ?? 'https://tikaff.net/?ref=rutgon';
         $modal_button_new_tab = ($settings['modal_button_new_tab'] ?? '1') === '1';
         
-        // Simple markdown-ish bold replacement
         $modal_body_html = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', htmlspecialchars($modal_body));
         $modal_note_html = htmlspecialchars($modal_note);
-        
         $list_items = explode("\n", trim($modal_list));
     ?>
     <div id="beta-modal" class="modal-backdrop">
@@ -585,6 +740,7 @@ try {
         </div>
     </div>
     <?php endif; ?>
+
     <script>
     function toggleLinkDetails() {
         const details = document.getElementById('link-details-section');
