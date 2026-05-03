@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.0.8';
+$current_version = '2.0.9';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -225,7 +225,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
         $should_update = true;
         if (file_exists($local_path)) {
             $local_content = file_get_contents($local_path);
-            $local_content = str_replace("\r\n", "\n", $local_content);
             $local_sha = sha1("blob " . strlen($local_content) . "\0" . $local_content);
             if ($local_sha === $remote_sha) {
                 $should_update = false;
@@ -268,8 +267,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'check_sha_update' && $is_lo
         }
 
         $local_content = file_get_contents($local_path);
-        // Chuẩn hóa xuống dòng về LF để khớp với mã SHA của GitHub
-        $local_content = str_replace("\r\n", "\n", $local_content);
         $local_sha = sha1("blob " . strlen($local_content) . "\0" . $local_content);
         
         if ($local_sha !== $file['sha']) {
@@ -1169,7 +1166,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                     if (isManual) banner.scrollIntoView({ behavior: 'smooth' });
                 }
             } else if (isManual) {
-                showToast('✅ Hệ thống đã ở phiên bản mới nhất.');
+                showToast('✅ Hệ thống của bạn đã khớp hoàn toàn với GitHub.');
             }
 
             if (dot) {
