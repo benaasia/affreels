@@ -2,6 +2,23 @@
 function callRemoteAPI($endpoint, $data = []) {
     global $remote_api_key, $remote_api_url;
 
+    // Tự động lấy cấu hình nếu biến global bị trống
+    if (empty($remote_api_url) || empty($remote_api_key)) {
+        try {
+            $db_temp = new PDO("sqlite:" . __DIR__ . "/links.db");
+            if (empty($remote_api_key)) {
+                $st = $db_temp->prepare("SELECT value FROM settings WHERE key = 'remote_api_key' LIMIT 1");
+                $st->execute(); $r = $st->fetch();
+                $remote_api_key = $r ? $r['value'] : 'FREE-85C45DDDBF3CEADB';
+            }
+            if (empty($remote_api_url)) {
+                $st = $db_temp->prepare("SELECT value FROM settings WHERE key = 'remote_api_url' LIMIT 1");
+                $st->execute(); $r = $st->fetch();
+                $remote_api_url = $r ? $r['value'] : 'https://tikaff.net/api/v1';
+            }
+        } catch (Exception $e) {}
+    }
+
     if (empty($remote_api_key)) {
         return ['success' => false, 'message' => 'Hệ thống yêu cầu API Key để hoạt động. Vui lòng cấu hình trong phần cài đặt.'];
     }
