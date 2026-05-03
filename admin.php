@@ -64,6 +64,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_password'])
 
 $is_logged_in = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 
+// Lấy cấu hình cơ bản (Dùng chung cho cả trang Login và Dashboard)
+$site_title = getSetting($db, 'site_title', 'FbReels Pro');
+$site_author = getSetting($db, 'site_author', 'ReelsLink');
+$site_favicon = getSetting($db, 'site_favicon', 'image/favicon.png');
+$site_logo = getSetting($db, 'site_logo', 'image/favicon.png');
+$custom_domain = getSetting($db, 'custom_domain');
+
 if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_slug'])) {
         header('Content-Type: application/json');
@@ -252,12 +259,6 @@ $page = max(1, intval($_GET['page'] ?? 1));
 $total_pages = 1;
 
 if ($is_logged_in) {
-    $custom_domain = getSetting($db, 'custom_domain');
-    $site_title = getSetting($db, 'site_title', 'FbReels Pro');
-    $site_author = getSetting($db, 'site_author', 'ReelsLink');
-    $site_favicon = getSetting($db, 'site_favicon', 'image/favicon.png');
-    $site_logo = getSetting($db, 'site_logo', 'image/favicon.png');
-
     $row = $db->query("SELECT COUNT(*) as total, COALESCE(SUM(clicks),0) as clicks FROM links")->fetch(PDO::FETCH_ASSOC);
     $total_links = $row['total'];
     $total_clicks = $row['clicks'];
