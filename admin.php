@@ -408,9 +408,9 @@ function buildQuery($overrides = []) {
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 Đăng xuất
             </a>
-            <div class="admin-nav-link version-display" style="opacity: 0.5; cursor: default; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 10px;">
-                <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; margin-right: 6px; vertical-align: middle; box-shadow: 0 0 8px #10b981;"></span>
-                Phiên bản v<?php echo $current_version; ?>
+            <div class="admin-nav-link version-display" onclick="manualCheckUpdate()" style="opacity: 0.6; cursor: pointer; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 10px; transition: all 0.3s;" title="Nhấn để kiểm tra cập nhật">
+                <span id="version-dot" style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; margin-right: 6px; vertical-align: middle; box-shadow: 0 0 8px #10b981;"></span>
+                <span id="version-text">Phiên bản v<?php echo $current_version; ?></span>
             </div>
         </div>
     </nav>
@@ -1089,7 +1089,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
     }
 
     // Update Checker for dist_client
-    (function checkUpdates() {
+    function checkUpdates(isManual = false) {
+        const dot = document.getElementById('version-dot');
+        if (isManual && dot) {
+            dot.style.background = '#f59e0b';
+            dot.style.boxShadow = '0 0 8px #f59e0b';
+        }
+
         const currentVersion = "<?php echo $current_version; ?>";
         // Thêm tham số thời gian để tránh bị cache bởi trình duyệt hoặc GitHub CDN
         const repoUrl = "https://raw.githubusercontent.com/benaasia/affreels/main/version.json?t=" + Date.now();
@@ -1097,19 +1103,43 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
         fetch(repoUrl)
             .then(res => res.json())
             .then(data => {
-                if (data && data.version && data.version !== currentVersion) {
-                    const banner = document.getElementById('update-banner');
-                    if (banner) {
-                        document.getElementById('new-version-tag').textContent = 'v' + data.version;
-                        if (data.changelog) {
-                            document.getElementById('update-changelog').textContent = data.changelog;
+                if (data && data.version) {
+                    if (data.version !== currentVersion) {
+                        const banner = document.getElementById('update-banner');
+                        if (banner) {
+                            document.getElementById('new-version-tag').textContent = 'v' + data.version;
+                            if (data.changelog) {
+                                document.getElementById('update-changelog').textContent = data.changelog;
+                            }
+                            banner.style.display = 'block';
+                            banner.scrollIntoView({ behavior: 'smooth' });
                         }
-                        banner.style.display = 'block';
+                    } else if (isManual) {
+                        showToast('✅ Bạn đang dùng phiên bản mới nhất.');
                     }
                 }
+                if (dot) {
+                    dot.style.background = '#10b981';
+                    dot.style.boxShadow = '0 0 8px #10b981';
+                }
             })
-            .catch(err => console.log("Update check failed:", err));
-    })();
+            .catch(err => {
+                console.log("Update check failed:", err);
+                if (isManual) showToast('❌ Không thể kiểm tra cập nhật.', true);
+                if (dot) {
+                    dot.style.background = '#ef4444';
+                    dot.style.boxShadow = '0 0 8px #ef4444';
+                }
+            });
+    }
+
+    // Tự động kiểm tra khi load
+    checkUpdates();
+
+    // Hàm gọi thủ công từ Sidebar
+    function manualCheckUpdate() {
+        checkUpdates(true);
+    }
 
     function runSmartUpdate() {
         const btn = document.getElementById('update-btn');
