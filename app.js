@@ -473,6 +473,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (longLinkSection) longLinkSection.style.display = 'block';
                 }
                 resultSection.style.display = 'block';
+                const donateSection = document.getElementById('donate-qr-container');
+                if (donateSection) donateSection.style.display = 'block';
+                
                 showStatus('Đã trích xuất!', false);
                 resultSection.scrollIntoView({ behavior: 'smooth' });
                 copyShortBtn.classList.add('loading-scrape');

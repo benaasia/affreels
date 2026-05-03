@@ -460,6 +460,29 @@ try {
                         </div>
                     </div>
 
+                    <!-- QR Donate (Chỉ hiện sau khi tạo link nếu được kích hoạt trong Admin) -->
+                    <?php 
+                        $qr_enabled = isset($settings['donate_qr_enabled']) && $settings['donate_qr_enabled'] === '1';
+                        $qr_url = isset($settings['donate_qr_url']) ? trim($settings['donate_qr_url']) : '';
+                        
+                        // Fallback logic
+                        if (empty($qr_url)) {
+                            $qr_url = isset($settings['master_donate_qr_url']) ? $settings['master_donate_qr_url'] : 'https://qr.sepay.vn/img?bank=Techcombank&acc=7679696999&template=&amount=&des=DonateAffReel';
+                        }
+                    ?>
+                    <?php if ($qr_enabled): ?>
+                    <div id="donate-qr-container" style="display:none; text-align:center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border-color);">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-dim); margin-bottom: 0.5rem; line-height: 1.5; padding: 0 10px;">☕ Hãy mời tôi một ly cà phê nếu bạn thấy công cụ này hữu ích nhé!</div>
+                        <div style="background: #fff; padding: 12px; display: inline-block; border-radius: 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                            <?php 
+                                $final_qr_url = $qr_url . (strpos($qr_url, '?') !== false ? '&' : '?') . 'v=' . time();
+                            ?>
+                            <img id="donate-qr-image" src="<?php echo htmlspecialchars($final_qr_url); ?>" alt="QR Donate" style="width: 150px; height: 150px; display: block; border-radius: 8px;">
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.8rem;">Cảm ơn bạn đã tin dùng dịch vụ!</div>
+                    </div>
+                    <?php endif; ?>
+
                     <div id="toggle-details-btn" style="display:none; text-align:center; margin-top: 0.8rem;">
                         <button type="button" onclick="toggleLinkDetails()" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-dim); padding: 6px 16px; border-radius: 10px; font-size: 0.8rem; cursor: pointer; transition: all 0.3s;">
                             ▼ Xem thêm chi tiết link

@@ -4,17 +4,13 @@ function callRemoteAPI($endpoint, $data = []) {
 
     // Tự động lấy cấu hình nếu biến global bị trống
     if (empty($remote_api_url) || empty($remote_api_key)) {
+        $remote_api_url = 'https://app.affreel.com/v1'; // Fix cứng URL
         try {
             $db_temp = new PDO("sqlite:" . __DIR__ . "/links.db");
             if (empty($remote_api_key)) {
                 $st = $db_temp->prepare("SELECT value FROM settings WHERE key = 'remote_api_key' LIMIT 1");
                 $st->execute(); $r = $st->fetch();
                 $remote_api_key = (!empty($r) && !empty($r['value'])) ? trim($r['value']) : 'FREE-85C45DDDBF3CEADB';
-            }
-            if (empty($remote_api_url)) {
-                $st = $db_temp->prepare("SELECT value FROM settings WHERE key = 'remote_api_url' LIMIT 1");
-                $st->execute(); $r = $st->fetch();
-                $remote_api_url = (!empty($r) && !empty($r['value'])) ? trim($r['value']) : 'https://app.affreel.com/v1';
             }
         } catch (Exception $e) {}
     }
@@ -39,6 +35,7 @@ function callRemoteAPI($endpoint, $data = []) {
     ]);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     
     $response = curl_exec($ch);
     $error = curl_error($ch);
@@ -105,5 +102,21 @@ function smartFacebookScrape($url) {
 }
 
 function smartCheckAPIStatus() {
-    return callRemoteAPI('check');
+    $res = callRemoteAPI('check');
+    
+    // Nếu thành công và có link QR từ main site, cập nhật lại vào settings cục bộ
+    if (isset($res['success']) && $res['success'] && !empty($res['donate_qr_url'])) {
+        try {
+            $db = new PDO("sqlite:" . __DIR__ . "/links.db");
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $stmt = $db->prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('master_donate_qr_url', ?)");
+            $stmt->execute([$res['donate_qr_url']]);
+            $res['db_update'] = true;
+        } catch (Exception $e) {
+            $res['db_update'] = false;
+            $res['db_error'] = $e->getMessage();
+        }
+    }
+    
+    return $res;
 }

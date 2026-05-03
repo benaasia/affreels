@@ -197,6 +197,11 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting($db, 'modal_button', trim($_POST['modal_button'] ?? ''));
         setSetting($db, 'modal_button_url', trim($_POST['modal_button_url'] ?? ''));
         setSetting($db, 'modal_button_new_tab', trim($_POST['modal_button_new_tab'] ?? '0'));
+
+        // QR Donate Settings (Client)
+        setSetting($db, 'donate_qr_enabled', trim($_POST['donate_qr_enabled'] ?? '0'));
+        setSetting($db, 'donate_qr_url', trim($_POST['donate_qr_url'] ?? ''));
+        
         echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình hệ thống & thông báo.']); exit;
     }
 }
@@ -406,6 +411,107 @@ function buildQuery($overrides = []) {
     <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($site_favicon); ?>">
     <link rel="stylesheet" href="style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Modern Image Management UI */
+        .admin-image-input-group {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .admin-image-input-group:focus-within {
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+        .admin-image-input-group .admin-settings-input {
+            border: none !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            color: #ffffff !important;
+            font-weight: 500;
+            padding: 12px 15px !important;
+        }
+        .admin-upload-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-left: 1px solid var(--border-color);
+            color: var(--text-dim);
+            padding: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .admin-upload-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .admin-preview-box {
+            margin-top: 5px;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .admin-preview-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .admin-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%), 
+                              linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.05) 75%), 
+                              linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.05) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        /* Copy Icon Button styling */
+        .admin-copy-icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+            opacity: 0.5;
+        }
+        .admin-copy-icon-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        /* Zebra striping for table rows */
+        .admin-table tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        .admin-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.04) !important;
+        }
+    </style>
 </head>
 <body class="admin-body">
 
@@ -530,25 +636,55 @@ function buildQuery($overrides = []) {
 
         <div class="admin-settings-row">
             <div class="admin-settings-label">Logo</div>
-            <div style="flex: 1; display: flex; gap: 8px;">
-                <input type="text" id="site-logo" value="<?php echo htmlspecialchars(getSetting($db, 'site_logo', 'image/favicon.png')); ?>" placeholder="Link ảnh logo..." class="admin-settings-input">
-                <button class="admin-action-btn" onclick="triggerUpload('site-logo')" title="Tải ảnh lên server" style="margin:0; height: 100%;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></button>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div class="admin-image-input-group">
+                    <input type="text" id="site-logo" oninput="updatePreview('site-logo')" value="<?php echo htmlspecialchars(getSetting($db, 'site_logo', 'image/favicon.png')); ?>" placeholder="Link ảnh logo..." class="admin-settings-input">
+                    <button class="admin-upload-btn" onclick="triggerUpload('site-logo')" title="Tải ảnh lên server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                </div>
+                <div id="site-logo-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_logo')) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước Logo</div>
+                    <div class="admin-preview-container">
+                        <img id="site-logo-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_logo', 'image/favicon.png')); ?>?v=<?php echo time(); ?>" style="max-height: 60px;">
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="admin-settings-row">
             <div class="admin-settings-label">Favicon</div>
-            <div style="flex: 1; display: flex; gap: 8px;">
-                <input type="text" id="site-favicon" value="<?php echo htmlspecialchars(getSetting($db, 'site_favicon', 'image/favicon.png')); ?>" placeholder="Link ảnh favicon..." class="admin-settings-input">
-                <button class="admin-action-btn" onclick="triggerUpload('site-favicon')" title="Tải ảnh lên server" style="margin:0; height: 100%;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></button>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div class="admin-image-input-group">
+                    <input type="text" id="site-favicon" oninput="updatePreview('site-favicon')" value="<?php echo htmlspecialchars(getSetting($db, 'site_favicon', 'image/favicon.png')); ?>" placeholder="Link ảnh favicon..." class="admin-settings-input">
+                    <button class="admin-upload-btn" onclick="triggerUpload('site-favicon')" title="Tải ảnh lên server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                </div>
+                <div id="site-favicon-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_favicon')) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước Favicon</div>
+                    <div class="admin-preview-container">
+                        <img id="site-favicon-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_favicon', 'image/favicon.png')); ?>?v=<?php echo time(); ?>" style="width: 32px; height: 32px;">
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="admin-settings-row">
             <div class="admin-settings-label">Ảnh OG (Share)</div>
-            <div style="flex: 1; display: flex; gap: 8px;">
-                <input type="text" id="site-og-image" value="<?php echo htmlspecialchars(getSetting($db, 'site_og_image', 'image/og.jpg')); ?>" placeholder="Link ảnh khi chia sẻ..." class="admin-settings-input">
-                <button class="admin-action-btn" onclick="triggerUpload('site-og-image')" title="Tải ảnh lên server" style="margin:0; height: 100%;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></button>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div class="admin-image-input-group">
+                    <input type="text" id="site-og-image" oninput="updatePreview('site-og-image')" value="<?php echo htmlspecialchars(getSetting($db, 'site_og_image', 'image/og.jpg')); ?>" placeholder="Link ảnh khi chia sẻ..." class="admin-settings-input">
+                    <button class="admin-upload-btn" onclick="triggerUpload('site-og-image')" title="Tải ảnh lên server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                </div>
+                <div id="site-og-image-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_og_image')) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước Ảnh Share (1200x630)</div>
+                    <div class="admin-preview-container">
+                        <img id="site-og-image-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_og_image', 'image/og.jpg')); ?>?v=<?php echo time(); ?>" style="max-width: 100%; max-height: 150px; border-radius: 4px;">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -572,6 +708,40 @@ function buildQuery($overrides = []) {
             </div>
         </div>
 
+        <div class="admin-settings-row" style="background: rgba(16, 185, 129, 0.03); padding: 20px; border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3); margin-top: 15px;">
+            <div class="admin-settings-label" style="color: #10b981; font-weight: 700; font-size: 1rem;"><i class="fas fa-qrcode"></i> QR Donate (Cá nhân)</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <label class="admin-toggle-switch">
+                        <input type="checkbox" id="donate-qr-enabled" <?php echo getSetting($db, 'donate_qr_enabled', '0') === '1' ? 'checked' : ''; ?>>
+                        <span class="admin-toggle-slider"></span>
+                    </label>
+                    <span style="font-size: 0.9rem; color: #ffffff; font-weight: 600;">Kích hoạt hiển thị QR riêng sau khi tạo link</span>
+                </div>
+                <div class="admin-image-input-group">
+                    <?php 
+                        $db_qr = getSetting($db, 'donate_qr_url', '');
+                        $master_qr = getSetting($db, 'master_donate_qr_url', 'https://qr.sepay.vn/img?bank=Techcombank&acc=7679696999&template=&amount=&des=DonateAffReel');
+                        $display_preview_qr = !empty($db_qr) ? $db_qr : $master_qr;
+                    ?>
+                    <input type="text" id="donate-qr-url" oninput="updatePreview('donate-qr-url')" value="<?php echo htmlspecialchars($db_qr); ?>" placeholder="Để trống để dùng QR hệ thống..." class="admin-settings-input">
+                    <button class="admin-upload-btn" onclick="triggerUpload('donate-qr-url')" title="Tải ảnh lên server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                </div>
+                <div id="donate-qr-url-preview-box" class="admin-preview-box" style="<?php echo empty($display_preview_qr) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước QR (<?php echo empty($db_qr) ? 'Mặc định hệ thống' : 'Cá nhân'; ?>)</div>
+                    <div class="admin-preview-container" style="background: #fff; padding: 10px;">
+                        <img id="donate-qr-url-preview" src="<?php echo htmlspecialchars($display_preview_qr); ?>?v=<?php echo time(); ?>" style="width: 140px; height: 140px; border-radius: 8px;">
+                    </div>
+                </div>
+                <small style="display: block; width: 100%; color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">
+                    * <strong>Để trống:</strong> Tự động cập nhật theo QR từ AffReel.com.<br>
+                    * <strong>Điền link/Upload:</strong> Sử dụng QR riêng của bạn (ưu tiên).
+                </small>
+            </div>
+        </div>
+
         <div class="admin-settings-actions">
             <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu tất cả cài đặt</button>
         </div>
@@ -580,7 +750,7 @@ function buildQuery($overrides = []) {
     </div>
 
     <!-- Beta Modal Notification -->
-    <div class="admin-settings-card" style="margin-top: 1.2rem; border-left: 4px solid var(--secondary);">
+    <div class="admin-settings-card" style="margin-top: 1.2rem;">
         <div class="admin-settings-card-header">
             <h3>📢 Thông báo (Beta Modal)</h3>
         </div>
@@ -642,9 +812,10 @@ function buildQuery($overrides = []) {
         </div>
 
         <div class="admin-settings-actions">
-            <button onclick="saveBranding()" class="admin-settings-save" style="background: var(--secondary);">💾 Lưu thông báo</button>
+            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu thông báo</button>
         </div>
     </div>
+
 
     <div class="admin-settings-card" style="margin-top: 1.2rem;">
         <div class="admin-settings-card-header">
@@ -795,14 +966,14 @@ function buildQuery($overrides = []) {
                 <thead>
                     <tr>
                         <th style="width: 40px; text-align: center;"><input type="checkbox" id="check-all" onclick="toggleCheckAll(this)" style="cursor: pointer; transform: scale(1.2);"></th>
-                        <th>#</th>
-                        <th>Link rút gọn</th>
-                        <th>Nguồn</th>
-                        <th>Aff ID</th>
-                        <th>URL Shopee đích</th>
-                        <th>Clicks</th>
-                        <th>Ngày tạo</th>
-                        <th></th>
+                        <th style="width: 40px;">#</th>
+                        <th style="width: 15%;">Link rút gọn</th>
+                        <th style="width: 30%;">Nguồn</th>
+                        <th style="width: 80px;">Aff ID</th>
+                        <th style="width: 35%;">URL Shopee đích</th>
+                        <th style="width: 60px;">Clicks</th>
+                        <th style="width: 130px;">Ngày tạo</th>
+                        <th style="width: 80px;"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -812,16 +983,26 @@ function buildQuery($overrides = []) {
                         <td style="text-align: center;"><input type="checkbox" class="row-checkbox" value="<?php echo htmlspecialchars($link['slug']); ?>" onchange="updateBulkDeleteBtn()" style="cursor: pointer; transform: scale(1.2);"></td>
                         <td class="admin-td-index"><?php echo $start_index + $idx + 1; ?></td>
                         <td class="admin-td-slug">
-                            <a href="<?php echo $display_base; ?>/s/<?php echo htmlspecialchars($link['slug']); ?>" target="_blank" class="admin-slug-link">
-                                <?php echo htmlspecialchars($display_base); ?>/s/<?php echo htmlspecialchars($link['slug']); ?>
-                            </a>
+                            <div style="display: inline-flex; align-items: center; gap: 8px; max-width: 100%;">
+                                <a href="<?php echo $display_base; ?>/s/<?php echo htmlspecialchars($link['slug']); ?>" target="_blank" class="admin-slug-link" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <?php echo htmlspecialchars($display_base); ?>/s/<?php echo htmlspecialchars($link['slug']); ?>
+                                </a>
+                                <button class="admin-copy-icon-btn" onclick="copyText('<?php echo $display_base; ?>/s/<?php echo htmlspecialchars($link['slug']); ?>', 'Link rút gọn')" title="Sao chép link" style="flex-shrink: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
                         </td>
                         <td class="admin-td-source">
                             <?php if (!empty($link['source_url'])): ?>
-                                <a href="<?php echo htmlspecialchars($link['source_url']); ?>" target="_blank" class="admin-source-link" title="<?php echo htmlspecialchars($link['source_url']); ?>">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
-                                    <?php echo htmlspecialchars(mb_strimwidth($link['source_url'], 0, 25, '...')); ?>
-                                </a>
+                                <div style="display: inline-flex; align-items: center; gap: 6px; max-width: 100%;">
+                                    <a href="<?php echo htmlspecialchars($link['source_url']); ?>" target="_blank" class="admin-source-link" title="<?php echo htmlspecialchars($link['source_url']); ?>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                                        <?php echo htmlspecialchars(mb_strimwidth($link['source_url'], 0, 35, '...')); ?>
+                                    </a>
+                                    <button class="admin-copy-icon-btn" onclick="copyText('<?php echo htmlspecialchars($link['source_url']); ?>', 'Link nguồn')" title="Sao chép nguồn" style="flex-shrink: 0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                    </button>
+                                </div>
                             <?php else: ?>
                                 <span class="admin-no-source">—</span>
                             <?php endif; ?>
@@ -834,10 +1015,15 @@ function buildQuery($overrides = []) {
                             <?php endif; ?>
                         </td>
                         <td class="admin-td-url">
-                            <div class="admin-url-display" id="url-<?php echo htmlspecialchars($link['slug']); ?>">
-                                <a href="<?php echo htmlspecialchars($link['url']); ?>" target="_blank" title="<?php echo htmlspecialchars($link['url']); ?>">
-                                    <?php echo htmlspecialchars(mb_strimwidth($link['url'], 0, 45, '...')); ?>
-                                </a>
+                            <div style="display: inline-flex; align-items: center; gap: 6px; max-width: 100%;">
+                                <div class="admin-url-display" id="url-<?php echo htmlspecialchars($link['slug']); ?>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <a href="<?php echo htmlspecialchars($link['url']); ?>" target="_blank" title="<?php echo htmlspecialchars($link['url']); ?>">
+                                        <?php echo htmlspecialchars(mb_strimwidth($link['url'], 0, 50, '...')); ?>
+                                    </a>
+                                </div>
+                                <button class="admin-copy-icon-btn" onclick="copyText('<?php echo htmlspecialchars($link['url']); ?>', 'URL đích')" title="Sao chép URL đích" style="flex-shrink: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
                             </div>
                         </td>
                         <td class="admin-td-clicks">
@@ -857,9 +1043,6 @@ function buildQuery($overrides = []) {
                             ?>
                         </td>
                         <td class="admin-td-actions">
-                            <button class="admin-action-btn admin-btn-copy" onclick="copyShortLink('<?php echo htmlspecialchars($link['slug']); ?>')" title="Sao chép">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
                             <button class="admin-action-btn admin-btn-edit" onclick="editLink('<?php echo htmlspecialchars($link['slug']); ?>')" title="Sửa">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             </button>
@@ -980,6 +1163,7 @@ function handleImageUpload(input) {
         .then(data => {
             if (data.success) {
                 document.getElementById(currentUploadTarget).value = data.url;
+                updatePreview(currentUploadTarget);
                 showToast('✅ Đã tải ảnh thành công!');
             } else {
                 showToast('❌ ' + data.message, true);
@@ -990,6 +1174,18 @@ function handleImageUpload(input) {
             showToast('❌ Lỗi kết nối khi tải ảnh.', true);
             input.value = '';
         });
+}
+
+function updatePreview(id) {
+    const val = document.getElementById(id).value.trim();
+    const previewBox = document.getElementById(id + '-preview-box');
+    const previewImg = document.getElementById(id + '-preview');
+    if (val) {
+        previewImg.src = val;
+        previewBox.style.display = 'block';
+    } else {
+        previewBox.style.display = 'none';
+    }
 }
 
 function saveBranding() {
@@ -1015,6 +1211,10 @@ function saveBranding() {
     fd.append('modal_button', document.getElementById('modal-button').value.trim());
     fd.append('modal_button_url', document.getElementById('modal-button-url').value.trim());
     fd.append('modal_button_new_tab', document.getElementById('modal-button-new-tab').checked ? '1' : '0');
+
+    // Client QR settings
+    fd.append('donate_qr_enabled', document.getElementById('donate-qr-enabled').checked ? '1' : '0');
+    fd.append('donate_qr_url', document.getElementById('donate-qr-url').value.trim());
     
     fetch('admin.php', { method: 'POST', body: fd })
         .then(r => r.json())
@@ -1057,6 +1257,10 @@ function changePassword() {
 
 function copyShortLink(slug) {
     navigator.clipboard.writeText(BASE_URL + '/s/' + slug).then(() => showToast('Đã sao chép: ' + BASE_URL + '/s/' + slug));
+}
+
+function copyText(text, label) {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Đã sao chép ' + label));
 }
 
 function deleteLink(slug) {

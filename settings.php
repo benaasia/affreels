@@ -1,6 +1,7 @@
 <?php
 
 define('DB_FILE', 'links.db');
+require_once 'remote_api_helper.php';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -14,14 +15,21 @@ try {
     die("Database Error: " . $e->getMessage());
 }
 
+// Tự động đồng bộ QR từ main site mỗi khi truy cập trang cài đặt
+smartCheckAPIStatus();
+
 $message = '';
 $message_type = 'success';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $api_key = isset($_POST['remote_api_key']) ? trim($_POST['remote_api_key']) : '';
+    
     try {
         $stmt = $db->prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('remote_api_key', ?)");
         $stmt->execute([$api_key]);
+
+        // Đồng bộ lại sau khi lưu
+        smartCheckAPIStatus();
 
         $message = "Cấu hình đã được lưu thành công!";
     } catch (PDOException $e) {
@@ -34,7 +42,7 @@ $stmt_settings = $db->query("SELECT * FROM settings");
 $settings = $stmt_settings->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $current_key = isset($settings['remote_api_key']) ? $settings['remote_api_key'] : 'FREE-85C45DDDBF3CEADB';
-$current_url = 'https://app.affreel.com/v1';
+$qr_url = isset($settings['master_donate_qr_url']) ? $settings['master_donate_qr_url'] : 'https://qr.sepay.vn/img?bank=Techcombank&acc=7679696999&template=&amount=&des=DonateAffReel';
 
 ?>
 <!DOCTYPE html>
@@ -128,6 +136,35 @@ $current_url = 'https://app.affreel.com/v1';
             border: 4px solid var(--input-bg);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .settings-card {
+                padding: 1.5rem 1rem;
+            }
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .form-group label {
+                font-size: 0.85rem;
+            }
+            .btn-submit {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .settings-card {
+                padding: 1.2rem 0.8rem;
+                border-radius: 16px;
+            }
+            .input-group-mobile {
+                flex-direction: column;
+            }
+            .btn-submit-mobile {
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -139,7 +176,9 @@ $current_url = 'https://app.affreel.com/v1';
                     FbReels <span style="font-weight: 300; color: var(--text-main);">Pro</span>
                 </a>
             </h1>
+            <!--
             <p>Cấu hình Remote API cho hệ thống</p>
+            -->
         </div>
 
         <div class="settings-card">
@@ -151,10 +190,10 @@ $current_url = 'https://app.affreel.com/v1';
 
             <form method="POST">
                 <div class="form-group">
-                    <label for="remote_api_key">API Key (Được cấp miễn phí bởi AffReel.com)</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="remote_api_key" name="remote_api_key" class="form-control" value="<?php echo htmlspecialchars($current_key); ?>" placeholder="Dán API Key của bạn vào đây...">
-                        <button type="submit" class="btn-submit" style="width: auto; white-space: nowrap; padding: 0 25px;">
+                    <label for="remote_api_key">API Key (Được cấp bởi AffReel)</label>
+                    <div style="display: flex; gap: 8px;" class="input-group-mobile">
+                        <input type="text" id="remote_api_key" name="remote_api_key" class="form-control" value="<?php echo htmlspecialchars($current_key); ?>" placeholder="Dán API Key của bạn vào đây..." style="flex: 1;">
+                        <button type="submit" class="btn-submit btn-submit-mobile" style="width: auto; padding: 0 25px; margin: 0; box-shadow: none; white-space: nowrap;">
                             <i class="fas fa-save"></i> Lưu
                         </button>
                     </div>
@@ -165,8 +204,12 @@ $current_url = 'https://app.affreel.com/v1';
             </form>
 
             <div class="donate-section">
-                <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim);">☕ Ủng hộ tác giả phát triển</div>
-                <img src="https://qr.sepay.vn/img?bank=Techcombank&acc=7679696999&template=&amount=&des=DonateAffReel" alt="QR Donate" class="qr-image">
+                <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim); line-height: 1.5;">☕ Chúng tôi cung cấp công cụ này hoàn toàn miễn phí,<br>hãy mời tác giả một ly cà phê để duy trì hệ thống nhé!</div>
+                <?php 
+                $qr_display_url = $qr_url;
+                $qr_display_url .= (strpos($qr_display_url, '?') !== false ? '&' : '?') . 'v=' . time();
+                ?>
+                <img src="<?php echo htmlspecialchars($qr_display_url); ?>" alt="QR Donate" class="qr-image">
                 <div style="font-size: 0.75rem; color: var(--text-dim);">Cảm ơn bạn đã tin dùng AffReel Pro!</div>
             </div>
             
