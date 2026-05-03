@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '1.0.0';
+$current_version = '2.0.2';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -178,6 +178,67 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting($db, 'modal_button_new_tab', trim($_POST['modal_button_new_tab'] ?? '0'));
         echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình hệ thống & thông báo.']); exit;
     }
+}
+
+// --- Smart Update Handler ---
+if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged_in) {
+    header('Content-Type: application/json');
+    $repo_api_url = "https://api.github.com/repos/benaasia/affreels/contents/";
+    $raw_base_url = "https://raw.githubusercontent.com/benaasia/affreels/main/";
+    
+    $opts = [
+        'http' => [
+            'method' => 'GET',
+            'header' => [
+                'User-Agent: FbReels-Pro-Updater',
+                'Accept: application/vnd.github.v3+json'
+            ]
+        ]
+    ];
+    $context = stream_context_create($opts);
+    
+    $remote_files = @file_get_contents($repo_api_url, false, $context);
+    if (!$remote_files) {
+        echo json_encode(['success' => false, 'message' => 'Không thể kết nối đến GitHub API.']); exit;
+    }
+    
+    $files = json_decode($remote_files, true);
+    $updated_files = [];
+    $skipped_files = ['links.db', '.htaccess', 'debug.log']; // Bảo vệ các file quan trọng
+    
+    foreach ($files as $file) {
+        if ($file['type'] !== 'file') continue;
+        $filename = $file['name'];
+        if (in_array($filename, $skipped_files)) continue;
+        
+        $local_path = __DIR__ . DIRECTORY_SEPARATOR . $filename;
+        $remote_sha = $file['sha'];
+        
+        $should_update = true;
+        if (file_exists($local_path)) {
+            $local_content = file_get_contents($local_path);
+            $local_sha = sha1("blob " . strlen($local_content) . "\0" . $local_content);
+            if ($local_sha === $remote_sha) {
+                $should_update = false;
+            }
+        }
+        
+        if ($should_update) {
+            $new_content = @file_get_contents($raw_base_url . $filename, false, $context);
+            if ($new_content !== false) {
+                if (@file_put_contents($local_path, $new_content)) {
+                    $updated_files[] = $filename;
+                }
+            }
+        }
+    }
+    
+    echo json_encode([
+        'success' => true, 
+        'message' => count($updated_files) > 0 ? 'Đã cập nhật ' . count($updated_files) . ' file.' : 'Tất cả file đã ở phiên bản mới nhất.',
+        'updated' => $updated_files
+    ]);
+    exit;
 }
 
 $tab = isset($_GET['tab']) ? $_GET['tab'] : 'dashboard';
@@ -541,10 +602,16 @@ function buildQuery($overrides = []) {
                 <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">Đã có phiên bản mới: <span id="new-version-tag" style="background: #ef4444; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; margin-left: 5px;">v0.0.0</span></h3>
                 <p id="update-changelog" style="margin: 5px 0 0; font-size: 0.85rem; color: #94a3b8;">Hệ thống phát hiện bản cập nhật mới trên GitHub. Vui lòng cập nhật để sử dụng các tính năng mới nhất.</p>
             </div>
-            <a href="https://github.com/benaasia/affreels" target="_blank" class="admin-settings-save" style="background: #6366f1; text-decoration: none; margin: 0; padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; border-radius: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                Tải về
-            </a>
+            <div id="update-actions" style="display: flex; gap: 10px;">
+                <button onclick="runSmartUpdate()" id="update-btn" class="admin-settings-save" style="background: #6366f1; text-decoration: none; margin: 0; padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; color: white;">
+                    <svg id="update-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span id="update-text">Cập nhật ngay</span>
+                </button>
+                <a href="https://github.com/benaasia/affreels" target="_blank" style="background: rgba(255,255,255,0.1); color: white; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    Chi tiết
+                </a>
+            </div>
         </div>
     </div>
 
@@ -1012,6 +1079,51 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
             })
             .catch(err => console.log("Update check failed:", err));
     })();
+
+    function runSmartUpdate() {
+        const btn = document.getElementById('update-btn');
+        const text = document.getElementById('update-text');
+        const icon = document.getElementById('update-icon');
+        
+        if (btn.disabled) return;
+        
+        if (!confirm('Hệ thống sẽ tải và ghi đè các file có thay đổi từ GitHub. Quá trình này không làm mất dữ liệu links. Tiếp tục?')) return;
+        
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        text.textContent = 'Đang xử lý...';
+        icon.style.animation = 'spin 1s linear infinite';
+        
+        const style = document.createElement('style');
+        style.innerHTML = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
+        
+        const fd = new FormData();
+        fd.append('action', 'smart_update');
+        
+        fetch('admin.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    text.textContent = 'Hoàn tất!';
+                    showToast('✅ ' + data.message);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    text.textContent = 'Thử lại';
+                    icon.style.animation = 'none';
+                    showToast('❌ ' + data.message, true);
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                text.textContent = 'Lỗi kết nối';
+                icon.style.animation = 'none';
+                showToast('❌ Lỗi kết nối server.', true);
+            });
+    }
     </script>
 </body>
 </html>
