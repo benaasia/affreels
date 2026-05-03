@@ -164,7 +164,18 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting($db, 'site_og_image', trim($_POST['site_og_image'] ?? ''));
         setSetting($db, 'site_video_url', trim($_POST['site_video_url'] ?? ''));
         setSetting($db, 'site_fb_token', trim($_POST['site_fb_token'] ?? ''));
-        echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình thương hiệu.']); exit;
+
+        // Modal Settings
+        setSetting($db, 'modal_enabled', trim($_POST['modal_enabled'] ?? '0'));
+        setSetting($db, 'modal_icon', trim($_POST['modal_icon'] ?? '🧪'));
+        setSetting($db, 'modal_title', trim($_POST['modal_title'] ?? ''));
+        setSetting($db, 'modal_body', trim($_POST['modal_body'] ?? ''));
+        setSetting($db, 'modal_list', trim($_POST['modal_list'] ?? ''));
+        setSetting($db, 'modal_note', trim($_POST['modal_note'] ?? ''));
+        setSetting($db, 'modal_button', trim($_POST['modal_button'] ?? ''));
+        setSetting($db, 'modal_button_url', trim($_POST['modal_button_url'] ?? ''));
+        setSetting($db, 'modal_button_new_tab', trim($_POST['modal_button_new_tab'] ?? '0'));
+        echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình hệ thống & thông báo.']); exit;
     }
 }
 
@@ -412,15 +423,82 @@ function buildQuery($overrides = []) {
                     3. Copy <b>ID ứng dụng (App ID)</b> và <b>Khóa bí mật (App Secret)</b>.<br>
                     4. Dán vào ô trên theo định dạng: <code>AppID|AppSecret</code>
                 </small>
-                <small style="color: #64748b; font-size: 0.65rem; margin-top: 5px; display: block;">* Để trống nếu muốn dùng Token hệ thống của Server API.</small>
+                <small style="color: #ef4444; font-size: 0.65rem; margin-top: 5px; display: block; font-weight: 600;">* Để trống nếu không muốn tự động debug/scrape link lên Facebook.</small>
             </div>
         </div>
 
         <div class="admin-settings-actions">
-            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu cấu hình thương hiệu</button>
+            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu tất cả cài đặt</button>
         </div>
         
         <input type="file" id="admin-image-uploader" style="display:none;" onchange="handleImageUpload(this)" accept="image/*">
+    </div>
+
+    <!-- Beta Modal Notification -->
+    <div class="admin-settings-card" style="margin-top: 1.2rem; border-left: 4px solid var(--secondary);">
+        <div class="admin-settings-card-header">
+            <h3>📢 Thông báo (Beta Modal)</h3>
+        </div>
+        <p class="admin-settings-desc">Cấu hình cửa sổ thông báo hiện ra khi người dùng truy cập trang chủ.</p>
+        
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Kích hoạt thông báo</div>
+            <div style="flex: 1;">
+                <label class="admin-switch">
+                    <input type="checkbox" id="modal-enabled" <?php echo getSetting($db, 'modal_enabled', '1') === '1' ? 'checked' : ''; ?>>
+                    <span class="admin-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Icon</div>
+            <input type="text" id="modal-icon" value="<?php echo htmlspecialchars(getSetting($db, 'modal_icon', '🧪')); ?>" placeholder="Ví dụ: 🧪, 🚀, 🎁..." class="admin-settings-input" style="width: 80px;">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Tiêu đề</div>
+            <input type="text" id="modal-title" value="<?php echo htmlspecialchars(getSetting($db, 'modal_title', 'Tăng 300% Chuyển Đổi TikTok')); ?>" placeholder="Tiêu đề thông báo..." class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Nội dung (Đoạn văn)</div>
+            <textarea id="modal-body" placeholder="Nội dung chính của thông báo..." class="admin-settings-input" style="height: 80px; padding: 10px;"><?php echo htmlspecialchars(getSetting($db, 'modal_body', 'Bạn đang mất đơn vì khách hàng phải đăng nhập lại trên trình duyệt? Hãy dùng thử **TikAff.net** - Giải pháp **Deep Link** tối ưu nhất hiện nay')); ?></textarea>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Danh sách (Mỗi dòng 1 ý)</div>
+            <textarea id="modal-list" placeholder="🚀 **Test link:** Xác nhận Fans thấy Voucher 20%..." class="admin-settings-input" style="height: 100px; padding: 10px;"><?php echo htmlspecialchars(getSetting($db, 'modal_list', "🚀 **Mở App Ngay**: Tự động mở thẳng App TikTok\n💰 **Giữ Chân Khách**: Tăng tỷ lệ chuyển đổi.\n📊 **Thống Kê**: Theo dõi click và đơn hàng thời gian thực.")); ?></textarea>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Ghi chú (Chữ nghiêng)</div>
+            <input type="text" id="modal-note" value="<?php echo htmlspecialchars(getSetting($db, 'modal_note', '* Giải pháp hoàn hảo cho KOC/Link Bio TikTok. Miễn phí 100%')); ?>" placeholder="Ghi chú nhỏ phía dưới..." class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Nhãn nút bấm</div>
+            <input type="text" id="modal-button" value="<?php echo htmlspecialchars(getSetting($db, 'modal_button', 'Khám phá TikAff ngay!')); ?>" placeholder="Chữ hiển thị trên nút..." class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Link nút bấm</div>
+            <input type="text" id="modal-button-url" value="<?php echo htmlspecialchars(getSetting($db, 'modal_button_url', 'https://tikaff.net/?ref=rutgon')); ?>" placeholder="https://... (Để trống nếu chỉ muốn đóng modal)" class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Mở tab mới</div>
+            <div style="flex: 1;">
+                <label class="admin-switch">
+                    <input type="checkbox" id="modal-button-new-tab" <?php echo getSetting($db, 'modal_button_new_tab', '1') === '1' ? 'checked' : ''; ?>>
+                    <span class="admin-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="admin-settings-actions">
+            <button onclick="saveBranding()" class="admin-settings-save" style="background: var(--secondary);">💾 Lưu thông báo</button>
+        </div>
     </div>
 
     <div class="admin-settings-card" style="margin-top: 1.2rem;">
@@ -734,6 +812,17 @@ function saveBranding() {
     fd.append('site_og_image', document.getElementById('site-og-image').value.trim());
     fd.append('site_video_url', document.getElementById('site-video-url').value.trim());
     fd.append('site_fb_token', document.getElementById('site-fb-token').value.trim());
+
+    // Modal settings
+    fd.append('modal_enabled', document.getElementById('modal-enabled').checked ? '1' : '0');
+    fd.append('modal_icon', document.getElementById('modal-icon').value.trim());
+    fd.append('modal_title', document.getElementById('modal-title').value.trim());
+    fd.append('modal_body', document.getElementById('modal-body').value.trim());
+    fd.append('modal_list', document.getElementById('modal-list').value.trim());
+    fd.append('modal_note', document.getElementById('modal-note').value.trim());
+    fd.append('modal_button', document.getElementById('modal-button').value.trim());
+    fd.append('modal_button_url', document.getElementById('modal-button-url').value.trim());
+    fd.append('modal_button_new_tab', document.getElementById('modal-button-new-tab').checked ? '1' : '0');
     
     fetch('admin.php', { method: 'POST', body: fd })
         .then(r => r.json())

@@ -67,6 +67,8 @@ function smartFacebookScrape($url) {
         if ($row_fb) $client_fb_token = $row_fb['value'];
     } catch (Exception $e) {}
 
+    if (empty($client_fb_token)) return ['success' => false, 'message' => 'Scrape disabled because token is empty.'];
+    
     return callRemoteAPI('scrape', [
         'url' => $url,
         'fb_access_token' => $client_fb_token
