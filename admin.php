@@ -3,7 +3,7 @@ session_start();
 define('DB_FILE', 'links.db');
 define('DEFAULT_PASSWORD', 'admin123');
 define('PER_PAGE', 10);
-$current_version = '2.0.3';
+$current_version = '2.0.4';
 
 try {
     $db = new PDO("sqlite:" . DB_FILE);
@@ -38,6 +38,7 @@ function setSetting($db, $key, $value) {
 }
 
 $remote_api_key = trim(getSetting($db, 'remote_api_key', 'FREE-85C45DDDBF3CEADB'));
+$remote_api_url = trim(getSetting($db, 'remote_api_url', 'https://tikaff.net/api/v1'));
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
 if (empty($remote_api_key) && !$is_ajax && !isset($_POST['save_branding']) && !isset($_POST['remote_api_key'])) {
@@ -262,6 +263,18 @@ if ($is_logged_in) {
     $row = $db->query("SELECT COUNT(*) as total, COALESCE(SUM(clicks),0) as clicks FROM links")->fetch(PDO::FETCH_ASSOC);
     $total_links = $row['total'];
     $total_clicks = $row['clicks'];
+
+    // Kiểm tra trạng thái API khi ở Dashboard
+    $api_warning = '';
+    if ($tab === 'dashboard' && file_exists(__DIR__ . '/remote_api_helper.php')) {
+        require_once __DIR__ . '/remote_api_helper.php';
+        $api_res = smartCheckAPIStatus();
+        if (isset($api_res['success']) && !$api_res['success']) {
+            if (stripos($api_res['message'], 'limit') !== false || stripos($api_res['message'], 'hết lượt') !== false || stripos($api_res['message'], 'API Key') !== false) {
+                $api_warning = $api_res['message'];
+            }
+        }
+    }
 
     if ($tab === 'dashboard') {
         $order = 'created_at DESC';
@@ -595,6 +608,18 @@ function buildQuery($overrides = []) {
 </div>
 
 <?php else: ?>
+
+    <?php if (!empty($api_warning)): ?>
+    <div class="admin-settings-card" style="background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1px solid #fdba74; margin-bottom: 1.5rem; padding: 1.2rem; border-radius: 12px; display: flex; align-items: center; gap: 15px; animation: slideDown 0.4s ease-out;">
+        <div style="width: 45px; height: 45px; background: #f97316; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);">⚠️</div>
+        <div style="flex: 1;">
+            <h4 style="margin: 0; color: #9a3412; font-size: 1rem;">Cảnh báo hệ thống API</h4>
+            <p style="margin: 3px 0 0; color: #c2410c; font-size: 0.85rem;"><?php echo htmlspecialchars($api_warning); ?></p>
+        </div>
+        <a href="settings.php" class="admin-settings-save" style="background: #f97316; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; color: white;">Gia hạn / Đổi Key</a>
+    </div>
+    <style> @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } } </style>
+    <?php endif; ?>
 
     <!-- Update Notification (Hidden by default) -->
     <div id="update-banner" class="admin-settings-card" style="display:none; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 1.5rem; position: relative; overflow: hidden; padding: 1.5rem; border-radius: 16px;">
