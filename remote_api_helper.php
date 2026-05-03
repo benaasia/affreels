@@ -96,5 +96,5 @@ function smartFacebookScrape($url) {
 }
 
 function smartCheckAPIStatus() {
-    return callRemoteAPI('status');
+    return callRemoteAPI('check');
 }
