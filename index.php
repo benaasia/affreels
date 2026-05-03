@@ -505,22 +505,61 @@ try {
         </div>
     </div>
 
+    <!-- Beta Testing Modal -->
+    <?php 
+    $modal_enabled = $settings['modal_enabled'] ?? '1';
+    if ($modal_enabled === '1'):
+        $modal_icon = $settings['modal_icon'] ?? '🚀';
+        $modal_title = $settings['modal_title'] ?? 'Tăng 300% Chuyển Đổi TikTok';
+        $modal_body = $settings['modal_body'] ?? 'Bạn đang mất đơn vì khách hàng phải đăng nhập lại trên trình duyệt? Hãy dùng thử **TikAff.net** - Giải pháp **Deep Link** tối ưu nhất hiện nay';
+        $modal_list = $settings['modal_list'] ?? "🚀 **Mở App Ngay**: Tự động mở thẳng App TikTok\n💰 **Giữ Chân Khách**: Tăng tỷ lệ chuyển đổi.\n📊 **Thống Kê**: Theo dõi click và đơn hàng thời gian thực.";
+        $modal_note = $settings['modal_note'] ?? '* Giải pháp hoàn hảo cho KOC/Link Bio TikTok. Miễn phí 100%';
+        $modal_button = $settings['modal_button'] ?? 'Khám phá TikAff ngay!';
+        $modal_button_url = $settings['modal_button_url'] ?? 'https://tikaff.net/?ref=rutgon';
+        $modal_button_new_tab = ($settings['modal_button_new_tab'] ?? '1') === '1';
+        
+        // Simple markdown-ish bold replacement
+        $modal_body_html = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', htmlspecialchars($modal_body));
+        $modal_note_html = htmlspecialchars($modal_note);
+        
+        $list_items = explode("\n", trim($modal_list));
+    ?>
     <div id="beta-modal" class="modal-backdrop">
         <div class="modal-card">
-            <div class="modal-icon">🧪</div>
-            <h2 class="modal-title">Thông Báo Thử Nghiệm</h2>
+            <div class="modal-icon"><?php echo htmlspecialchars($modal_icon); ?></div>
+            <h2 class="modal-title"><?php echo htmlspecialchars($modal_title); ?></h2>
             <div class="modal-body">
-                <p>AffReel <strong>"Lách quy định Fb Reels của Shpe"</strong> đang thử nghiệm. Để đảm bảo quyền lợi, vui lòng hỗ trợ AffReel:</p>
+                <p><?php echo $modal_body_html; ?></p>
+                <?php if (!empty($list_items)): ?>
                 <ul class="modal-list">
-                    <li>🚀 <strong>Test link:</strong> Xác nhận Fans thấy <strong>Voucher 20%</strong>.</li>
-                    <li>💰 <strong>Mua thử:</strong> Kiểm tra mức <strong>Hoa hồng X3</strong>.</li>
-                    <li>🎁 <strong>Cam kết:</strong> Miễn phí 100% trọn đời.</li>
+                    <?php foreach ($list_items as $item): 
+                        if (empty(trim($item))) continue;
+                        $item_html = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', htmlspecialchars($item));
+                    ?>
+                        <li><?php echo $item_html; ?></li>
+                    <?php endforeach; ?>
                 </ul>
-                <p style="font-size: 0.85rem; color: #94a3b8; font-style: italic; margin-top: 1rem;">* Vui lòng báo lỗi & góp ý cho Admin để hoàn thiện AffReel. Cảm ơn bạn!</p>
+                <?php endif; ?>
+                <?php if ($modal_note): ?>
+                <p style="font-size: 0.85rem; color: #94a3b8; font-style: italic; margin-top: 1rem;"><?php echo $modal_note_html; ?></p>
+                <?php endif; ?>
             </div>
-            <button class="modal-btn" onclick="dismissBetaModal()">Tôi đã hiểu & Bắt đầu!</button>
+            <?php if (!empty($modal_button_url)): ?>
+                <a href="<?php echo htmlspecialchars($modal_button_url); ?>" 
+                   <?php echo $modal_button_new_tab ? 'target="_blank"' : ''; ?> 
+                   class="modal-btn" 
+                   onclick="dismissBetaModal()" 
+                   style="text-decoration: none; display: block; text-align: center;">
+                    <?php echo htmlspecialchars($modal_button); ?>
+                </a>
+            <?php else: ?>
+                <button class="modal-btn" onclick="dismissBetaModal()">
+                    <?php echo htmlspecialchars($modal_button); ?>
+                </button>
+            <?php endif; ?>
         </div>
     </div>
+    <?php endif; ?>
 
     <script>
     function toggleLinkDetails() {
