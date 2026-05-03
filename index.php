@@ -317,9 +317,12 @@ try {
                 background: transparent;
             }
             .mobile-logo img {
-                height: 38px;
+                height: 48px;
                 width: auto;
                 object-fit: contain;
+                background: white;
+                padding: 5px;
+                border-radius: 6px;
             }
             .mobile-header-right {
                 display: flex;

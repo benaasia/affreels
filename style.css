@@ -105,11 +105,8 @@ body.dark-mode .app-sidebar {
     object-fit: contain;
     border-radius: 5px;
     transition: all 0.3s ease;
-}
-
-body.dark-mode .brand-logo img {
     background: #fff;
-    padding: 8px;
+    padding: 10px;
 }
 
 .brand-info {
@@ -1109,9 +1106,12 @@ body.dark-mode .result-card {
 }
 
 .admin-logo-img {
-    width: 24px;
-    height: 24px;
+    height: 42px;
+    width: auto;
     object-fit: contain;
+    background: white;
+    padding: 5px;
+    border-radius: 6px;
 }
 
 .admin-logo-text {

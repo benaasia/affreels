@@ -82,7 +82,7 @@ $is_logged_in = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_i
 $site_title = getSetting($db, 'site_title', 'FbReels Pro');
 $site_author = getSetting($db, 'site_author', 'ReelsLink');
 $site_favicon = getSetting($db, 'site_favicon', 'image/favicon.png');
-$site_logo = getSetting($db, 'site_logo', 'image/favicon.png');
+$site_logo = getSetting($db, 'site_logo', 'image/logo.png');
 $custom_domain = getSetting($db, 'custom_domain');
 
 if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -521,7 +521,7 @@ function buildQuery($overrides = []) {
         <div class="admin-login-icon">🔐</div>
         <div class="admin-logo" style="text-align: center; margin-bottom: 1rem;">
             <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo" style="height: 40px; display: block; margin: 0 auto 10px;">
-            <span style="font-weight: 700; font-size: 1.2rem;"><?php echo htmlspecialchars($site_title); ?> <span style="font-weight: 300;">Admin</span></span>
+            <span style="font-weight: 700; font-size: 1.2rem;"><?php echo htmlspecialchars($site_title); ?>--> <span style="font-weight: 300;">Admin</span></span>
         </div>
         <p class="admin-login-subtitle">Admin Control Panel</p>
         <?php if ($login_error): ?>
@@ -544,7 +544,7 @@ function buildQuery($overrides = []) {
         <div class="admin-topbar-left">
             <a href="index.php" class="admin-logo-link">
                 <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo" class="admin-logo-img">
-                <span class="admin-logo-text"><?php echo htmlspecialchars($site_title); ?></span>
+                <!-- <span class="admin-logo-text"><?php echo htmlspecialchars($site_title); ?></span> -->
             </a>
             <span class="admin-badge">Admin</span>
         </div>
