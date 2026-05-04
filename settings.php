@@ -21,12 +21,13 @@ smartCheckAPIStatus();
 $message = '';
 $message_type = 'success';
 
+$current_key = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $api_key = isset($_POST['remote_api_key']) ? trim($_POST['remote_api_key']) : '';
+    $current_key = isset($_POST['remote_api_key']) ? trim($_POST['remote_api_key']) : '';
     
     try {
         $stmt = $db->prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('remote_api_key', ?)");
-        $stmt->execute([$api_key]);
+        $stmt->execute([$current_key]);
 
         // Đồng bộ lại sau khi lưu
         smartCheckAPIStatus();
@@ -36,13 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "Lỗi lưu cấu hình: " . $e->getMessage();
         $message_type = 'error';
     }
+} else {
+    // Lấy cấu hình hiện tại nếu không phải POST
+    $stmt_settings = $db->query("SELECT value FROM settings WHERE key = 'remote_api_key' LIMIT 1");
+    $current_key = $stmt_settings->fetchColumn() ?: 'FREE-85C45DDDBF3CEADB';
 }
 
-$stmt_settings = $db->query("SELECT * FROM settings");
-$settings = $stmt_settings->fetchAll(PDO::FETCH_KEY_PAIR);
-
-$current_key = isset($settings['remote_api_key']) ? $settings['remote_api_key'] : 'FREE-85C45DDDBF3CEADB';
+// Lấy toàn bộ settings cho các mục đích khác
+$stmt_all = $db->query("SELECT * FROM settings");
+$settings = $stmt_all->fetchAll(PDO::FETCH_KEY_PAIR);
 $qr_url = isset($settings['master_donate_qr_url']) ? $settings['master_donate_qr_url'] : 'https://qr.sepay.vn/img?bank=Techcombank&acc=7679696999&template=&amount=&des=DonateAffReel';
+
+// --- KIỂM TRA TRẠNG THÁI KEY ---
+$api_status = null;
+if (!empty($current_key)) {
+    $api_status = smartVerifyKey($current_key);
+}
 
 ?>
 <!DOCTYPE html>
@@ -210,12 +220,39 @@ $qr_url = isset($settings['master_donate_qr_url']) ? $settings['master_donate_qr
                 <div class="form-group">
                     <label for="remote_api_key">API Key (Được cấp bởi AffReel)</label>
                     <div style="display: flex; gap: 8px;" class="input-group-mobile">
-                        <input type="text" id="remote_api_key" name="remote_api_key" class="form-control" value="<?php echo htmlspecialchars($current_key); ?>" placeholder="Dán API Key của bạn vào đây..." style="flex: 1;">
+                        <div style="position: relative; flex: 1;">
+                            <input type="text" id="remote_api_key" name="remote_api_key" class="form-control" value="<?php echo htmlspecialchars($current_key); ?>" placeholder="Dán API Key của bạn vào đây..." style="width: 100%; padding-right: 45px;">
+                            <?php if ($api_status): ?>
+                                <i class="fas <?php echo $api_status['success'] ? 'fa-check-circle' : 'fa-times-circle'; ?>" 
+                                   style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: <?php echo $api_status['success'] ? '#10b981' : '#ef4444'; ?>; font-size: 1.1rem;"
+                                   title="<?php echo htmlspecialchars($api_status['message']); ?>"></i>
+                            <?php endif; ?>
+                        </div>
                         <button type="submit" class="btn-submit btn-submit-mobile" style="width: auto; padding: 0 25px; margin: 0; box-shadow: none; white-space: nowrap;">
                             <i class="fas fa-save"></i> Lưu
                         </button>
                     </div>
-                    <small style="display: block; margin-top: 8px; font-size: 0.8rem;">
+
+                    <?php if ($api_status): ?>
+                        <div style="margin-top: 15px; padding: 15px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid <?php echo $api_status['success'] ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'; ?>;">
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <span style="font-size: 0.9rem; font-weight: 600;">
+                                    <i class="fas fa-shield-check" style="color: <?php echo $api_status['success'] ? '#10b981' : '#ef4444'; ?>;"></i> 
+                                    Trạng thái API Key: 
+                                    <span style="color: <?php echo $api_status['success'] ? '#10b981' : '#ef4444'; ?>;">
+                                        <?php echo $api_status['success'] ? 'Hợp lệ' : 'Không hợp lệ'; ?>
+                                    </span>
+                                </span>
+                                <?php if (!$api_status['success']): ?>
+                                    <div style="font-size: 0.8rem; color: #ef4444; font-style: italic; background: rgba(239, 68, 68, 0.05); padding: 8px; border-radius: 4px; border-left: 3px solid #ef4444;">
+                                        <i class="fas fa-info-circle"></i> <?php echo htmlspecialchars($api_status['message']); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <small style="display: block; margin-top: 12px; font-size: 0.8rem;">
                         <i class="fab fa-telegram" style="color: #0088cc;"></i> Chưa có Key? <a href="https://t.me/shortlinkone" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Lấy API miễn phí tại đây</a>
                     </small>
                 </div>
