@@ -1,8 +1,15 @@
 # ReelsLink Pro - Server Security Rules (SQLite Optimized)
 
-# 1. Quy tắc Rewrite (Không ép HTTPS để tương thích Laragon Local)
+# 1. Quy tắc Rewrite
 RewriteEngine On
 ErrorDocument 404 /redirect.php
+
+# Cố gắng bỏ qua kiểm tra bảo mật cho Facebook (Chỉ hoạt động nếu Server cho phép)
+<IfModule mod_security.c>
+  SecFilterEngine Off
+  SecFilterScanPOST Off
+</IfModule>
+
 RewriteRule ^robots\.txt$ - [L]
 RewriteRule ^s/([a-zA-Z0-9]+)$ redirect.php?slug=$1 [L,QSA]
 
