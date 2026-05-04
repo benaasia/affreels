@@ -174,7 +174,6 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         echo json_encode(['success'=>false, 'message'=>'Lỗi khi lưu file trên server.']); exit;
     }
-
     if (isset($_POST['save_branding'])) {
         header('Content-Type: application/json');
         setSetting($db, 'site_title', trim($_POST['site_title'] ?? ''));
@@ -187,8 +186,14 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting($db, 'site_video_url', trim($_POST['site_video_url'] ?? ''));
         setSetting($db, 'site_fb_token', trim($_POST['site_fb_token'] ?? ''));
         setSetting($db, 'site_gtag_id', trim($_POST['site_gtag_id'] ?? ''));
+        setSetting($db, 'donate_qr_enabled', trim($_POST['donate_qr_enabled'] ?? '0'));
+        setSetting($db, 'donate_qr_url', trim($_POST['donate_qr_url'] ?? ''));
+        setSetting($db, 'site_404_redirect', trim($_POST['site_404_redirect'] ?? ''));
+        echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình hệ thống.']); exit;
+    }
 
-        // Modal Settings
+    if (isset($_POST['save_notification'])) {
+        header('Content-Type: application/json');
         setSetting($db, 'modal_enabled', trim($_POST['modal_enabled'] ?? '0'));
         setSetting($db, 'modal_icon', trim($_POST['modal_icon'] ?? '🧪'));
         setSetting($db, 'modal_title', trim($_POST['modal_title'] ?? ''));
@@ -198,13 +203,7 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         setSetting($db, 'modal_button', trim($_POST['modal_button'] ?? ''));
         setSetting($db, 'modal_button_url', trim($_POST['modal_button_url'] ?? ''));
         setSetting($db, 'modal_button_new_tab', trim($_POST['modal_button_new_tab'] ?? '0'));
-
-        // QR Donate Settings (Client)
-        setSetting($db, 'donate_qr_enabled', trim($_POST['donate_qr_enabled'] ?? '0'));
-        setSetting($db, 'donate_qr_url', trim($_POST['donate_qr_url'] ?? ''));
-        setSetting($db, 'site_404_redirect', trim($_POST['site_404_redirect'] ?? ''));
-        
-        echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình hệ thống & thông báo.']); exit;
+        echo json_encode(['success'=>true,'message'=>'Đã cập nhật thông báo hệ thống.']); exit;
     }
 }
 
@@ -569,6 +568,10 @@ function buildQuery($overrides = []) {
                 Quản lý API
             </a>
             <?php endif; ?>
+            <a href="admin.php?tab=notification" class="admin-nav-link <?php echo $tab==='notification'?'active':''; ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                Thông báo
+            </a>
             <a href="admin.php?tab=settings" class="admin-nav-link <?php echo $tab==='settings'?'active':''; ?>">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 Cài đặt
@@ -782,12 +785,44 @@ function buildQuery($overrides = []) {
         <input type="file" id="admin-image-uploader" style="display:none;" onchange="handleImageUpload(this)" accept="image/*">
     </div>
 
-    <!-- Beta Modal Notification -->
     <div class="admin-settings-card" style="margin-top: 1.2rem;">
         <div class="admin-settings-card-header">
-            <h3>📢 Thông báo (Beta Modal)</h3>
+            <h3>📋 Thông tin hệ thống</h3>
         </div>
-        <p class="admin-settings-desc">Cấu hình cửa sổ thông báo hiện ra khi người dùng truy cập trang chủ.</p>
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Tên miền chính</div>
+            <div class="admin-settings-value"><code><?php echo $_SERVER['HTTP_HOST']; ?></code></div>
+        </div>
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Short URL Base</div>
+            <div class="admin-settings-value"><code><?php echo $display_base; ?>/s/</code></div>
+        </div>
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Tổng link</div>
+            <div class="admin-settings-value"><?php echo number_format($total_links); ?></div>
+        </div>
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Database</div>
+            <div class="admin-settings-value"><code><?php echo DB_FILE; ?></code> (<?php echo round(filesize(DB_FILE)/1024, 1); ?> KB)</div>
+        </div>
+        <div class="admin-settings-row">
+            <div class="admin-settings-value">Mã hóa bcrypt · <a href="#" onclick="openPasswordModal(); return false;" style="color: var(--primary);">Đổi mật khẩu</a></div>
+        </div>
+    </div>
+</div>
+
+<?php elseif ($tab === 'notification'): ?>
+<!-- =================== NOTIFICATION PAGE =================== -->
+<div class="admin-page-content">
+    <div class="admin-page-header">
+        <h2>📢 Cửa sổ thông báo (Modal)</h2>
+    </div>
+
+    <div class="admin-settings-card">
+        <div class="admin-settings-card-header">
+            <h3>📢 Cấu hình Thông báo (Beta Modal)</h3>
+        </div>
+        <p class="admin-settings-desc">Cửa sổ này sẽ hiện ra một lần khi người dùng truy cập vào trang chủ.</p>
         
         <div class="admin-settings-row">
             <div class="admin-settings-label">Kích hoạt thông báo</div>
@@ -845,33 +880,7 @@ function buildQuery($overrides = []) {
         </div>
 
         <div class="admin-settings-actions">
-            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu thông báo</button>
-        </div>
-    </div>
-
-
-    <div class="admin-settings-card" style="margin-top: 1.2rem;">
-        <div class="admin-settings-card-header">
-            <h3>📋 Thông tin hệ thống</h3>
-        </div>
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Tên miền chính</div>
-            <div class="admin-settings-value"><code><?php echo $_SERVER['HTTP_HOST']; ?></code></div>
-        </div>
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Short URL Base</div>
-            <div class="admin-settings-value"><code><?php echo $display_base; ?>/s/</code></div>
-        </div>
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Tổng link</div>
-            <div class="admin-settings-value"><?php echo number_format($total_links); ?></div>
-        </div>
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Database</div>
-            <div class="admin-settings-value"><code><?php echo DB_FILE; ?></code> (<?php echo round(filesize(DB_FILE)/1024, 1); ?> KB)</div>
-        </div>
-        <div class="admin-settings-row">
-            <div class="admin-settings-value">Mã hóa bcrypt · <a href="#" onclick="openPasswordModal(); return false;" style="color: var(--primary);">Đổi mật khẩu</a></div>
+            <button onclick="saveNotification()" class="admin-settings-save" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">💾 Lưu cấu hình thông báo</button>
         </div>
     </div>
 </div>
@@ -1219,21 +1228,21 @@ function updatePreview(id) {
     }
 }
 
-function saveBranding() {
-    const fd = new FormData();
-    fd.append('save_branding', '1');
-    fd.append('site_title', document.getElementById('site-title').value.trim());
-    fd.append('site_desc', document.getElementById('site-desc').value.trim());
-    fd.append('site_keywords', document.getElementById('site-keywords').value.trim());
-    fd.append('site_author', document.getElementById('site-author').value.trim());
-    fd.append('site_logo', document.getElementById('site-logo').value.trim());
-    fd.append('site_favicon', document.getElementById('site-favicon').value.trim());
-    fd.append('site_og_image', document.getElementById('site-og-image').value.trim());
-    fd.append('site_video_url', document.getElementById('site-video-url').value.trim());
-    fd.append('site_fb_token', document.getElementById('site-fb-token').value.trim());
-    fd.append('site_gtag_id', document.getElementById('site-gtag_id').value.trim());
+    fd.append('donate_qr_enabled', document.getElementById('donate-qr-enabled').checked ? '1' : '0');
+    fd.append('donate_qr_url', document.getElementById('donate-qr-url').value.trim());
+    fd.append('site_404_redirect', document.getElementById('site-404-redirect').value.trim());
+    
+    fetch('admin.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            showToast(data.success ? '✅ ' + data.message : '❌ ' + data.message, !data.success);
+            if (data.success) setTimeout(() => location.reload(), 800);
+        });
+}
 
-    // Modal settings
+function saveNotification() {
+    const fd = new FormData();
+    fd.append('save_notification', '1');
     fd.append('modal_enabled', document.getElementById('modal-enabled').checked ? '1' : '0');
     fd.append('modal_icon', document.getElementById('modal-icon').value.trim());
     fd.append('modal_title', document.getElementById('modal-title').value.trim());
@@ -1244,11 +1253,6 @@ function saveBranding() {
     fd.append('modal_button_url', document.getElementById('modal-button-url').value.trim());
     fd.append('modal_button_new_tab', document.getElementById('modal-button-new-tab').checked ? '1' : '0');
 
-    // Client QR settings
-    fd.append('donate_qr_enabled', document.getElementById('donate-qr-enabled').checked ? '1' : '0');
-    fd.append('donate_qr_url', document.getElementById('donate-qr-url').value.trim());
-    fd.append('site_404_redirect', document.getElementById('site-404-redirect').value.trim());
-    
     fetch('admin.php', { method: 'POST', body: fd })
         .then(r => r.json())
         .then(data => {
