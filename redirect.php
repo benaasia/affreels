@@ -2,10 +2,20 @@
 define('DB_FILE', 'links.db');
 $slug = isset($_GET['slug']) ? $_GET['slug'] : '';
 
-if (!preg_match('/^[a-zA-Z0-9]{1,10}$/', $slug)) {
-    header("HTTP/1.1 404 Not Found");
-    echo "<h1>404 Not Found</h1><p>Mã liên kết không hợp lệ.</p>";
-    exit;
+// Bảo mật: Lọc slug (chỉ cho phép chữ và số)
+if (empty($slug) || !preg_match('/^[a-zA-Z0-9]{1,10}$/', $slug)) {
+    try {
+        $db_tmp = new PDO("sqlite:" . DB_FILE);
+        $st = $db_tmp->prepare("SELECT value FROM settings WHERE key = 'site_404_redirect' LIMIT 1");
+        $st->execute();
+        $r404 = $st->fetchColumn();
+        if (empty($r404)) $r404 = 'https://affreel.com';
+        header("Location: " . $r404);
+        exit;
+    } catch (Exception $e) {
+        header("Location: https://affreel.com");
+        exit;
+    }
 }
 
 try {
@@ -33,6 +43,17 @@ try {
 } catch (PDOException $e) {
 }
 
-header("HTTP/1.1 404 Not Found");
-echo "<h1>404 Not Found</h1><p>Xin lỗi, liên kết này không tồn tại hoặc đã bị xóa.</p>";
+// Nếu không tìm thấy link trong database
+try {
+    $stmt_404 = $db->prepare("SELECT value FROM settings WHERE key = 'site_404_redirect' LIMIT 1");
+    $stmt_404->execute();
+    $redirect_404 = $stmt_404->fetchColumn();
+    if (empty($redirect_404)) $redirect_404 = 'https://affreel.com';
+    
+    header("Location: " . $redirect_404);
+    exit;
+} catch (Exception $e) {
+    header("Location: https://affreel.com");
+    exit;
+}
 ?>
