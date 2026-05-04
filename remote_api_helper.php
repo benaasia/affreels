@@ -101,6 +101,12 @@ function smartFacebookScrape($url) {
     ]);
 }
 
+function smartVerifyKey($force_key = null) {
+    global $remote_api_key;
+    if ($force_key !== null) $remote_api_key = $force_key;
+    return callRemoteAPI('check_status');
+}
+
 function smartCheckAPIStatus() {
     $res = callRemoteAPI('check');
     
