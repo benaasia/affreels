@@ -1,0 +1,29 @@
+# ReelsLink Pro - Server Security Rules (SQLite Optimized)
+
+# 1. Quy tắc Rewrite (Không ép HTTPS để tương thích Laragon Local)
+RewriteEngine On
+ErrorDocument 404 /redirect.php
+RewriteRule ^robots\.txt$ - [L]
+RewriteRule ^s/([a-zA-Z0-9]+)$ redirect.php?slug=$1 [L,QSA]
+
+# 2. CHẶN TRUY CẬP TRỰC TIẾP VÀO CÁC FILE NHẠY CẢM
+# Cấm truy cập links.json, database sqlite, logs và các file tài liệu
+<FilesMatch "\.(json|db|sqlite|log|md|zip|bak|sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 3. CHẶN TRUY CẬP VÀO THƯ MỤC EXTENSION
+RewriteRule ^extension/.*$ - [F,L]
+
+# 4. CẤU HÌNH BẢO MẬT BỔ SUNG
+Options -Indexes
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Access-Control-Allow-Origin "*"
