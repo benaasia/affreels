@@ -202,6 +202,7 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         // QR Donate Settings (Client)
         setSetting($db, 'donate_qr_enabled', trim($_POST['donate_qr_enabled'] ?? '0'));
         setSetting($db, 'donate_qr_url', trim($_POST['donate_qr_url'] ?? ''));
+        setSetting($db, 'site_404_redirect', trim($_POST['site_404_redirect'] ?? ''));
         
         echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình hệ thống & thông báo.']); exit;
     }
@@ -726,6 +727,20 @@ function buildQuery($overrides = []) {
             </div>
         </div>
 
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Link chuyển hướng 404</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                <?php 
+                $current_404 = getSetting($db, 'site_404_redirect', 'https://affreel.com');
+                if (empty($current_404)) $current_404 = 'https://affreel.com';
+                ?>
+                <input type="text" id="site-404-redirect" value="<?php echo htmlspecialchars($current_404); ?>" placeholder="Ví dụ: https://affreel.com hoặc /index.php" class="admin-settings-input">
+                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8; line-height: 1.5; display: block; margin-top: 5px;">
+                    Link sẽ được chuyển hướng đến khi người dùng truy cập vào một link rút gọn không tồn tại.
+                </small>
+            </div>
+        </div>
+
         <div class="admin-settings-row" style="background: rgba(16, 185, 129, 0.03); padding: 20px; border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3); margin-top: 15px;">
             <div class="admin-settings-label" style="color: #10b981; font-weight: 700; font-size: 1rem;"><i class="fas fa-qrcode"></i> QR Donate</div>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
@@ -1232,6 +1247,7 @@ function saveBranding() {
     // Client QR settings
     fd.append('donate_qr_enabled', document.getElementById('donate-qr-enabled').checked ? '1' : '0');
     fd.append('donate_qr_url', document.getElementById('donate-qr-url').value.trim());
+    fd.append('site_404_redirect', document.getElementById('site-404-redirect').value.trim());
     
     fetch('admin.php', { method: 'POST', body: fd })
         .then(r => r.json())
