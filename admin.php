@@ -43,7 +43,7 @@ function setSetting($db, $key, $value) {
 }
 
 $remote_api_key = trim(getSetting($db, 'remote_api_key', 'FREE-85C45DDDBF3CEADB'));
-$remote_api_url = trim(getSetting($db, 'remote_api_url', 'https://app.affreel.com/v1'));
+$remote_api_url = trim(getSetting($db, 'remote_api_url', 'https://api.affreel.com/v1'));
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
 if (empty($remote_api_key) && !$is_ajax && !isset($_POST['save_branding']) && !isset($_POST['remote_api_key'])) {
@@ -807,80 +807,6 @@ function buildQuery($overrides = []) {
         </div>
         <div class="admin-settings-row">
             <div class="admin-settings-value">Mã hóa bcrypt · <a href="#" onclick="openPasswordModal(); return false;" style="color: var(--primary);">Đổi mật khẩu</a></div>
-        </div>
-    </div>
-</div>
-
-<?php elseif ($tab === 'notification'): ?>
-<!-- =================== NOTIFICATION PAGE =================== -->
-<div class="admin-page-content">
-    <div class="admin-page-header">
-        <h2>📢 Cửa sổ thông báo (Modal)</h2>
-    </div>
-
-    <div class="admin-settings-card">
-        <div class="admin-settings-card-header">
-            <h3>📢 Cấu hình Thông báo (Beta Modal)</h3>
-        </div>
-        <p class="admin-settings-desc">Cửa sổ này sẽ hiện ra một lần khi người dùng truy cập vào trang chủ.</p>
-        
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Kích hoạt thông báo</div>
-            <div style="flex: 1;">
-                <label class="admin-switch">
-                    <input type="checkbox" id="modal-enabled" <?php echo getSetting($db, 'modal_enabled', '1') === '1' ? 'checked' : ''; ?>>
-                    <span class="admin-slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Icon</div>
-            <input type="text" id="modal-icon" value="<?php echo htmlspecialchars(getSetting($db, 'modal_icon', '🧪')); ?>" placeholder="Ví dụ: 🧪, 🚀, 🎁..." class="admin-settings-input" style="width: 80px;">
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Tiêu đề</div>
-            <input type="text" id="modal-title" value="<?php echo htmlspecialchars(getSetting($db, 'modal_title', 'Tăng 300% Chuyển Đổi TikTok')); ?>" placeholder="Tiêu đề thông báo..." class="admin-settings-input">
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Nội dung (Đoạn văn)</div>
-            <textarea id="modal-body" placeholder="Nội dung chính của thông báo..." class="admin-settings-input" style="height: 80px; padding: 10px;"><?php echo htmlspecialchars(getSetting($db, 'modal_body', 'Bạn đang mất đơn vì khách hàng phải đăng nhập lại trên trình duyệt? Hãy dùng thử **TikAff.net** - Giải pháp **Deep Link** tối ưu nhất hiện nay')); ?></textarea>
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Danh sách (Mỗi dòng 1 ý)</div>
-            <textarea id="modal-list" placeholder="🚀 **Test link:** Xác nhận Fans thấy Voucher 20%..." class="admin-settings-input" style="height: 100px; padding: 10px;"><?php echo htmlspecialchars(getSetting($db, 'modal_list', "🚀 **Mở App Ngay**: Tự động mở thẳng App TikTok\n💰 **Giữ Chân Khách**: Tăng tỷ lệ chuyển đổi.\n📊 **Thống Kê**: Theo dõi click và đơn hàng thời gian thực.")); ?></textarea>
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Ghi chú (Chữ nghiêng)</div>
-            <input type="text" id="modal-note" value="<?php echo htmlspecialchars(getSetting($db, 'modal_note', '* Giải pháp hoàn hảo cho KOC/Link Bio TikTok. Miễn phí 100%')); ?>" placeholder="Ghi chú nhỏ phía dưới..." class="admin-settings-input">
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Nhãn nút bấm</div>
-            <input type="text" id="modal-button" value="<?php echo htmlspecialchars(getSetting($db, 'modal_button', 'Khám phá TikAff ngay!')); ?>" placeholder="Chữ hiển thị trên nút..." class="admin-settings-input">
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Link nút bấm</div>
-            <input type="text" id="modal-button-url" value="<?php echo htmlspecialchars(getSetting($db, 'modal_button_url', 'https://tikaff.net/?ref=rutgon')); ?>" placeholder="https://... (Để trống nếu chỉ muốn đóng modal)" class="admin-settings-input">
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Mở tab mới</div>
-            <div style="flex: 1;">
-                <label class="admin-switch">
-                    <input type="checkbox" id="modal-button-new-tab" <?php echo getSetting($db, 'modal_button_new_tab', '1') === '1' ? 'checked' : ''; ?>>
-                    <span class="admin-slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div class="admin-settings-actions">
-            <button onclick="saveNotification()" class="admin-settings-save" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">💾 Lưu cấu hình thông báo</button>
         </div>
     </div>
 </div>

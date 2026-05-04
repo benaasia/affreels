@@ -4,7 +4,7 @@ function callRemoteAPI($endpoint, $data = []) {
 
     // Tự động lấy cấu hình nếu biến global bị trống
     if (empty($remote_api_url) || empty($remote_api_key)) {
-        $remote_api_url = 'https://app.affreel.com/v1'; // Fix cứng URL
+        $remote_api_url = 'https://api.affreel.com/v1'; // Fix cứng URL
         try {
             $db_temp = new PDO("sqlite:" . __DIR__ . "/links.db");
             if (empty($remote_api_key)) {
@@ -16,7 +16,7 @@ function callRemoteAPI($endpoint, $data = []) {
     }
 
     // Đảm bảo cuối cùng không bị trống
-    if (empty($remote_api_url)) $remote_api_url = 'https://app.affreel.com/v1';
+    if (empty($remote_api_url)) $remote_api_url = 'https://api.affreel.com/v1';
     if (empty($remote_api_key)) $remote_api_key = 'FREE-85C45DDDBF3CEADB';
 
     $url = rtrim($remote_api_url, '/') . '/' . ltrim($endpoint, '/');

@@ -59,7 +59,7 @@ try {
     $settings = $stmt_settings->fetchAll(PDO::FETCH_KEY_PAIR);
     
     $remote_api_key = isset($settings['remote_api_key']) ? trim($settings['remote_api_key']) : 'FREE-85C45DDDBF3CEADB';
-    $remote_api_url = 'https://app.affreel.com/v1';
+    $remote_api_url = 'https://api.affreel.com/v1';
 
     if (empty($remote_api_key) && $_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['action'])) {
         header('Location: settings.php');
