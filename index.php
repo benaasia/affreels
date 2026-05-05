@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
         $full_url = smartGetFinalUrl($shopee_input);
         
         if (strpos($full_url, 'ERROR: ') === 0) {
-            echo json_encode(['success' => false, 'message' => 'Hệ thống đang bảo trì hoặc gặp sự cố tạm thời. Vui lòng liên hệ Admin để được hỗ trợ!']);
+            echo json_encode(['success' => false, 'message' => 'Lỗi API: ' . substr($full_url, 7)]);
             exit;
         }
 
@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
         if ($is_short && stripos($full_url, 'origin_link') === false) {
              $full_url = smartGetFinalUrl($full_url);
              if (strpos($full_url, 'ERROR: ') === 0) {
-                echo json_encode(['success' => false, 'message' => 'Hệ thống đang bảo trì hoặc gặp sự cố tạm thời. Vui lòng liên hệ Admin để được hỗ trợ!']);
+                echo json_encode(['success' => false, 'message' => 'Lỗi API (Redirect): ' . substr($full_url, 7)]);
                 exit;
              }
         }
@@ -181,21 +181,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
 
     $is_direct_shopee = (stripos($input, 'shopee.vn') !== false || stripos($input, 'shp.ee') !== false || stripos($input, 'shope.ee') !== false);
     if ($is_direct_shopee) {
-        $result = smartExtractShopeeLink($input);
+        $result = smartExtractShopeeLink($input, false, isset($_POST['source_url']) ? $_POST['source_url'] : '');
     } else {
         $html = fetchHTMLFromURL($input);
         if (!$html) {
-            $result = smartExtractShopeeLink($input);
+            $result = smartExtractShopeeLink($input, false, isset($_POST['source_url']) ? $_POST['source_url'] : '');
             if (!$result['success']) {
                 echo json_encode(['success' => false, 'message' => 'Không tìm thấy link. FB có thể đã chặn bot.']);
                 exit;
             }
         } else {
-            $result = smartExtractShopeeLink($html, true);
+            $result = smartExtractShopeeLink($html, true, isset($_POST['source_url']) ? $_POST['source_url'] : '');
         }
     }
 
     if ($result['success']) {
+        $final_dest = $result['link'];
+        // Expand đệ quy phía client cho chắc chắn (giống bản chính)
+        for ($i = 0; $i < 3; $i++) {
+            $final_dest = str_replace('&amp;', '&', $final_dest);
+            $is_redir = (stripos($final_dest, 'an_redir') !== false && stripos($final_dest, 'origin_link=') !== false);
+            if ($is_redir) {
+                if (preg_match('/origin_link=([^&]+)/i', $final_dest, $m)) {
+                    $nested = urldecode($m[1]);
+                    $nested = str_replace(['%252F', '%2F'], '/', $nested);
+                    if (strpos($nested, '2F') === 0) $nested = '/' . substr($nested, 2);
+                    if (strpos($nested, '/s.shopee.vn') === 0) $nested = 'https:/' . $nested;
+                    if (strpos($nested, 's.shopee.vn') === 0) $nested = 'https://' . $nested;
+                    if (stripos($nested, 's.shopee.vn') !== false || stripos($nested, 'shp.ee') !== false || stripos($nested, 'shope.ee') !== false) {
+                        $full_nested = smartGetFinalUrl($nested);
+                        if ($full_nested && strpos($full_nested, 'ERROR:') === false) $final_dest = $full_nested;
+                        else { $final_dest = $nested; break; }
+                    } else { $final_dest = $nested; break; }
+                } else { break; }
+            } else { break; }
+        }
+        $result['link'] = $final_dest;
+
         $explicit_source = isset($_POST['source_url']) ? trim($_POST['source_url']) : '';
         if (empty($explicit_source)) {
             $decoded_input = rawurldecode(urldecode($raw_input));
@@ -206,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPT
         }
         $result['short_link'] = generateShortLink($result['link'], $db, $explicit_source, $result['affiliate_id'] ?? '');
     } else {
-        $result['message'] = 'Hệ thống đang bảo trì hoặc gặp sự cố tạm thời. Vui lòng liên hệ Admin để được hỗ trợ!';
+        $result['message'] = 'Lỗi xử lý API: ' . ($result['message'] ?? 'Không rõ nguyên nhân');
     }
     echo json_encode($result);
     exit;
@@ -382,31 +404,65 @@ $site_gtag_id = $site_gtag_id ?? '';
             .sidebar-nav { display: flex; width: 100%; height: 100%; justify-content: space-around; align-items: center; gap: 10px; }
             .nav-btn { 
                 flex: 1;
-                height: 45px;
-                flex-direction: row !important; 
+                height: 50px;
+                flex-direction: column !important; 
                 justify-content: center !important; 
                 align-items: center !important;
-                gap: 8px !important;
-                padding: 0 10px !important; 
+                gap: 4px !important;
+                padding: 0 2px !important; 
                 margin: 0 !important;
-                font-size: 0.8rem !important; 
+                font-size: 0.6rem !important; 
                 border-radius: 12px;
                 background: transparent !important;
                 box-shadow: none !important;
             }
             .nav-btn[data-tab="setup"] { display: none !important; }
-            .nav-btn span { display: inline-block !important; margin: 0 !important; opacity: 1; white-space: nowrap; }
+            .nav-btn span { display: inline-block !important; margin: 0 !important; opacity: 1; white-space: normal; line-height: 1.1; text-align: center; max-width: 100%; }
             .nav-btn.active { background: var(--accent-gradient) !important; color: white !important; box-shadow: 0 4px 12px var(--primary-glow) !important; }
             .nav-btn.active span { font-weight: 700; }
-            .nav-btn i, .nav-icon-svg { font-size: 1.1rem !important; width: auto !important; }
+            .nav-btn i, .nav-icon-svg { font-size: 1.2rem !important; width: auto !important; margin-bottom: 2px; }
             .main-content-scroll { padding: 70px 1rem 80px 1rem !important; }
             .hide-on-mobile { display: none !important; }
             .show-on-mobile { display: inline-block !important; }
+            
+            .mobile-header { 
+                display: flex !important; 
+                justify-content: space-between !important; 
+                align-items: center !important; 
+                padding: 15px 15px 0 15px !important; 
+                background: transparent !important;
+            }
+            .mobile-logo {
+                display: flex;
+                align-items: center;
+                height: 100%;
+            }
+            .mobile-logo img {
+                height: 35px !important;
+                width: auto !important;
+                object-fit: contain !important;
+                max-width: 150px !important;
+                display: block !important;
+            }
+            .mobile-header-right {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .mobile-settings-btn {
+                background: rgba(255,255,255,0.1) !important;
+                border: none !important;
+                color: white !important;
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer;
+            }
         }
         .mobile-header { display: none; }
-        @media (max-width: 992px) {
-            .mobile-header { display: flex; }
-        }
         .show-on-mobile { display: none; }
     </style>
 </head>
@@ -436,19 +492,18 @@ $site_gtag_id = $site_gtag_id ?? '';
                     <svg class="nav-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                         <path d="M19.14 7.42h-3.41V6.15c0-2.07-1.68-3.75-3.75-3.75S8.23 4.08 8.23 6.15v1.27H4.82c-1.12 0-2.03.91-2.03 2.03l-1.01 10.14c0 1.12.91 2.03 2.03 2.03h16.22c1.12 0 2.03-.91 2.03-2.03l-1.01-10.14c0-1.12-.91-2.03-2.03-2.03zm-8.88-1.27c0-.96.78-1.74 1.74-1.74s1.74.78 1.74 1.74v1.27h-3.48V6.15zm5.17 11.23c0 .33-.06.66-.19.95-.12.3-.3.56-.54.79-.23.23-.5.42-.81.56-.3.14-.64.21-.99.21-.48 0-.91-.12-1.3-.35s-.71-.56-.95-1l.92-.53c.16.3.36.52.62.67.25.15.53.22.84.22.18 0 .34-.03.5-.1.15-.07.28-.16.39-.28s.2-.26.26-.42c.06-.17.09-.35.09-.54 0-.17-.03-.33-.1-.47s-.17-.27-.3-.38-.28-.21-.46-.3-.38-.17-.61-.26c-.34-.12-.66-.26-.95-.42s-.54-.35-.74-.58c-.19-.23-.34-.49-.44-.79s-.15-.65-.15-1.05c0-.33.06-.64.19-.94s.3-.56.53-.78c.22-.22.49-.4.8-.52s.64-.19 1-.19c.4 0 .76.08 1.09.25s.61.39.84.67.4.59.5 1l-.9.42c-.12-.34-.28-.59-.5-.75-.21-.16-.48-.25-.8-.25-.15 0-.29.03-.43.08-.13.05-.24.13-.34.22s-.17.21-.23.34c-.05.13-.08.27-.08.43 0 .14.03.26.09.37s.14.21.25.3.23.18.38.25c.15.07.31.13.48.19.4.15.75.31 1.04.49s.54.39.73.63.32.51.41.81c.09.3.13.63.13.99z"></path>
                     </svg>
-                    <span>
-                        <span class="hide-on-mobile">Link Shopee</span>
-                    </span>
+                    <span>Link Shopee</span>
                 </button>
                 <button class="nav-btn tab-btn" data-tab="fbreel">
                     <i class="fab fa-facebook"></i> 
-                    <span>
-                        <span class="hide-on-mobile">Facebook Reels</span>
-                    </span>
+                    <span>Facebook Reels</span>
                 </button>
+                <a href="convert.php" class="nav-btn">
+                    <i class="fas fa-exchange-alt"></i> <span>Chuyển đổi Link</span>
+                </a>
                 
                 <div class="nav-label">Hệ thống</div>
-                <button class="nav-btn tab-btn" data-tab="setup">
+                <button class="nav-btn tab-btn hide-on-mobile" data-tab="setup">
                     <i class="fas fa-cog"></i> <span>Cài đặt</span>
                 </button>
                 <a href="extension_guide.php" class="nav-btn hide-on-mobile">
@@ -504,7 +559,7 @@ $site_gtag_id = $site_gtag_id ?? '';
                         <button type="button" id="shopee-aff-ok-btn" style="width: auto; padding: 0 1.5rem; background: var(--secondary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">OK</button>
                     </div>
                     <div style="margin-top: -5px; text-align: left; padding-left: 5px;">
-                        <a href="https://affiliate.shopee.vn/account_setting" target="_blank" style="font-size: 0.7rem; color: var(--secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; opacity: 0.9; transition: opacity 0.2s;">
+                        <a href="https://s.shopee.vn/1BIwkrvTU5" target="_blank" style="font-size: 0.7rem; color: var(--secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; opacity: 0.9; transition: opacity 0.2s;">
                             <i class="fas fa-hand-point-right" style="font-size: 0.8rem;"></i> <b>Lấy Affiliate ID của bạn tại đây</b>
                         </a>
                     </div>
@@ -715,6 +770,9 @@ $site_gtag_id = $site_gtag_id ?? '';
     ?>
     <div id="beta-modal" class="modal-backdrop">
         <div class="modal-card">
+            <?php if (($settings['modal_close_enabled'] ?? '1') === '1'): ?>
+            <button class="modal-close" onclick="dismissBetaModal()" title="Đóng">&times;</button>
+            <?php endif; ?>
             <div class="modal-icon"><?php echo htmlspecialchars($modal_icon); ?></div>
             <h2 class="modal-title"><?php echo htmlspecialchars($modal_title); ?></h2>
             <div class="modal-body">

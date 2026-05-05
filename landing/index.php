@@ -34,7 +34,6 @@ if (file_exists($func_path)) {
             if (isset($settings_data['site_favicon']) && $settings_data['site_favicon'] !== '') $branding['site_favicon'] = $settings_data['site_favicon'];
             if (isset($settings_data['site_og_image']) && $settings_data['site_og_image'] !== '') $branding['site_og_image'] = $settings_data['site_og_image'];
             if (isset($settings_data['site_video_url']) && $settings_data['site_video_url'] !== '') $branding['site_video_url'] = $settings_data['site_video_url'];
-            if (isset($settings_data['site_gtag_id'])) $branding['site_gtag_id'] = $settings_data['site_gtag_id'];
             
             $loaded = true;
         }
@@ -50,7 +49,6 @@ $site_logo = (strpos($branding['site_logo'], 'http') === 0) ? $branding['site_lo
 $site_favicon = (strpos($branding['site_favicon'], 'http') === 0) ? $branding['site_favicon'] : '../' . ltrim($branding['site_favicon'], '/');
 $site_og_image = (strpos($branding['site_og_image'], 'http') === 0) ? $branding['site_og_image'] : $landing_url . '/' . ltrim($branding['site_og_image'], '/');
 $site_video_url = $branding['site_video_url'];
-$site_gtag_id = $branding['site_gtag_id'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -69,17 +67,13 @@ $site_gtag_id = $branding['site_gtag_id'] ?? '';
 
     <title><?php echo htmlspecialchars($site_title); ?></title>
     
-    <?php if (!empty($site_gtag_id)): ?>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($site_gtag_id); ?>"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XX8CW4JJHN"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
-      gtag('config', '<?php echo htmlspecialchars($site_gtag_id); ?>');
+      gtag('config', 'G-XX8CW4JJHN');
     </script>
-    <?php endif; ?>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($site_favicon); ?>">

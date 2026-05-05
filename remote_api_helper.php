@@ -4,7 +4,15 @@ function callRemoteAPI($endpoint, $data = []) {
 
     // Tự động lấy cấu hình nếu biến global bị trống
     if (empty($remote_api_url) || empty($remote_api_key)) {
-        $remote_api_url = 'https://api.affreel.com/v1'; // Fix cứng URL
+        // Tự động nhận diện domain API (Local Laragon hỗ trợ .test)
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $remote_api_url = 'https://api.affreel.com/v1'; 
+        /* 
+        if (strpos($host, '.test') !== false || $host === 'localhost' || strpos($host, '127.0.0.1') !== false) {
+            $remote_api_url = 'http://localhost/apiaffreel/master_api/api.php';
+        }
+        */
+
         try {
             $db_temp = new PDO("sqlite:" . __DIR__ . "/links.db");
             if (empty($remote_api_key)) {
@@ -16,7 +24,14 @@ function callRemoteAPI($endpoint, $data = []) {
     }
 
     // Đảm bảo cuối cùng không bị trống
-    if (empty($remote_api_url)) $remote_api_url = 'https://api.affreel.com/v1';
+    if (empty($remote_api_url)) {
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if (strpos($host, '.test') !== false || $host === 'localhost' || strpos($host, '127.0.0.1') !== false) {
+            $remote_api_url = 'https://api.affreel.com/v1'; // Đã đổi sang remote thực
+        } else {
+            $remote_api_url = 'https://api.affreel.com/v1';
+        }
+    }
     if (empty($remote_api_key)) $remote_api_key = 'FREE-85C45DDDBF3CEADB';
 
     $url = rtrim($remote_api_url, '/') . '/' . ltrim($endpoint, '/');
@@ -34,6 +49,7 @@ function callRemoteAPI($endpoint, $data = []) {
         'Content-Type: application/x-www-form-urlencoded'
     ]);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    // Tắt kiểm tra SSL để tăng tính tương thích
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     
@@ -66,10 +82,11 @@ function callRemoteAPI($endpoint, $data = []) {
     return $result;
 }
 
-function smartExtractShopeeLink($input, $is_html = false) {
+function smartExtractShopeeLink($input, $is_html = false, $source_url = '') {
     return callRemoteAPI('extract', [
         'input' => $input,
-        'is_html' => $is_html ? 1 : 0
+        'is_html' => $is_html ? 1 : 0,
+        'source_url' => $source_url
     ]);
 }
 
@@ -85,26 +102,34 @@ function smartGetFinalUrl($url) {
 
 function smartFacebookScrape($url) {
     $client_fb_token = '';
+    $client_fb_app_id = '';
+    $client_fb_app_secret = '';
     try {
         $db_local = new PDO("sqlite:" . __DIR__ . "/links.db");
-        $st_fb = $db_local->prepare("SELECT value FROM settings WHERE key = 'site_fb_token' LIMIT 1");
-        $st_fb->execute();
-        $row_fb = $st_fb->fetch(PDO::FETCH_ASSOC);
-        if ($row_fb) $client_fb_token = $row_fb['value'];
+        $st = $db_local->prepare("SELECT key, value FROM settings WHERE key IN ('site_fb_token', 'site_fb_app_id', 'site_fb_app_secret')");
+        $st->execute();
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $row) {
+            if ($row['key'] === 'site_fb_token') $client_fb_token = $row['value'];
+            if ($row['key'] === 'site_fb_app_id') $client_fb_app_id = $row['value'];
+            if ($row['key'] === 'site_fb_app_secret') $client_fb_app_secret = $row['value'];
+        }
     } catch (Exception $e) {}
 
     if (empty($client_fb_token)) return ['success' => false, 'message' => 'Scrape disabled because token is empty.'];
     
     return callRemoteAPI('scrape', [
         'url' => $url,
-        'fb_access_token' => $client_fb_token
+        'fb_access_token' => $client_fb_token,
+        'fb_app_id' => $client_fb_app_id,
+        'fb_app_secret' => $client_fb_app_secret
     ]);
 }
 
 function smartVerifyKey($force_key = null) {
     global $remote_api_key;
     if ($force_key !== null) $remote_api_key = $force_key;
-    return callRemoteAPI('check_status');
+    return callRemoteAPI('check');
 }
 
 function smartCheckAPIStatus() {

@@ -174,27 +174,42 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         echo json_encode(['success'=>false, 'message'=>'Lỗi khi lưu file trên server.']); exit;
     }
-    if (isset($_POST['save_branding'])) {
+    if (isset($_POST['save_shopee'])) {
+        header('Content-Type: application/json');
+        setSetting($db, 'shopee_aff_id', trim($_POST['shopee_aff_id'] ?? ''));
+        setSetting($db, 'shopee_post_url', trim($_POST['shopee_post_url'] ?? ''));
+        setSetting($db, 'site_video_url', trim($_POST['site_video_url'] ?? ''));
+        echo json_encode(['success'=>true, 'message'=>'Đã lưu cấu hình Shopee.']); exit;
+    }
+
+    if (isset($_POST['save_branding_only'])) {
+        header('Content-Type: application/json');
+        setSetting($db, 'site_logo', trim($_POST['site_logo'] ?? ''));
+        setSetting($db, 'site_favicon', trim($_POST['site_favicon'] ?? ''));
+        setSetting($db, 'site_og_image', trim($_POST['site_og_image'] ?? ''));
+        echo json_encode(['success'=>true, 'message'=>'Đã cập nhật bộ nhận diện thương hiệu.']); exit;
+    }
+
+    if (isset($_POST['save_settings_only']) || isset($_POST['save_branding'])) {
         header('Content-Type: application/json');
         setSetting($db, 'site_title', trim($_POST['site_title'] ?? ''));
         setSetting($db, 'site_desc', trim($_POST['site_desc'] ?? ''));
         setSetting($db, 'site_keywords', trim($_POST['site_keywords'] ?? ''));
         setSetting($db, 'site_author', trim($_POST['site_author'] ?? ''));
-        setSetting($db, 'site_logo', trim($_POST['site_logo'] ?? ''));
-        setSetting($db, 'site_favicon', trim($_POST['site_favicon'] ?? ''));
-        setSetting($db, 'site_og_image', trim($_POST['site_og_image'] ?? ''));
-        setSetting($db, 'site_video_url', trim($_POST['site_video_url'] ?? ''));
-        setSetting($db, 'site_fb_token', trim($_POST['site_fb_token'] ?? ''));
         setSetting($db, 'site_gtag_id', trim($_POST['site_gtag_id'] ?? ''));
+        setSetting($db, 'site_fb_token', trim($_POST['site_fb_token'] ?? ''));
+        setSetting($db, 'site_fb_app_id', trim($_POST['site_fb_app_id'] ?? ''));
+        setSetting($db, 'site_fb_app_secret', trim($_POST['site_fb_app_secret'] ?? ''));
         setSetting($db, 'donate_qr_enabled', trim($_POST['donate_qr_enabled'] ?? '0'));
         setSetting($db, 'donate_qr_url', trim($_POST['donate_qr_url'] ?? ''));
         setSetting($db, 'site_404_redirect', trim($_POST['site_404_redirect'] ?? ''));
-        echo json_encode(['success'=>true,'message'=>'Đã cập nhật cấu hình hệ thống.']); exit;
+        echo json_encode(['success'=>true,'message'=>'Đã cập nhật cài đặt chung.']); exit;
     }
 
     if (isset($_POST['save_notification'])) {
         header('Content-Type: application/json');
         setSetting($db, 'modal_enabled', trim($_POST['modal_enabled'] ?? '0'));
+        setSetting($db, 'modal_close_enabled', trim($_POST['modal_close_enabled'] ?? '0'));
         setSetting($db, 'modal_icon', trim($_POST['modal_icon'] ?? '🧪'));
         setSetting($db, 'modal_title', trim($_POST['modal_title'] ?? ''));
         setSetting($db, 'modal_body', trim($_POST['modal_body'] ?? ''));
@@ -562,19 +577,25 @@ function buildQuery($overrides = []) {
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 Dashboard
             </a>
-            <?php if (is_dir(__DIR__ . '/master_api')): ?>
-            <a href="master_api/admin_keys.php" class="admin-nav-link" style="color: #facc15; font-weight: 700;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3L15.5 7.5z"></path></svg>
-                Quản lý API
+            <a href="admin.php?tab=settings" class="admin-nav-link <?php echo $tab==='settings'?'active':''; ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Cài đặt chung
             </a>
-            <?php endif; ?>
+            <a href="admin.php?tab=branding" class="admin-nav-link <?php echo $tab==='branding'?'active':''; ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="m12 19 7-7 3 3-7 7-3-3z"></path><path d="m18 13-1.5-7.5L4 2l3.5 12.5L15 16l3-3z"></path><path d="m5 10 1-1"></path><path d="m19 19-5 5"></path><circle cx="12.5" cy="11.5" r=".5"></circle></svg>
+                Thương hiệu
+            </a>
+            <a href="admin.php?tab=shopee" class="admin-nav-link <?php echo $tab==='shopee'?'active':''; ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                Shopee
+            </a>
             <a href="admin.php?tab=notification" class="admin-nav-link <?php echo $tab==='notification'?'active':''; ?>">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                 Thông báo
             </a>
-            <a href="admin.php?tab=settings" class="admin-nav-link <?php echo $tab==='settings'?'active':''; ?>">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                Cài đặt
+            <a href="admin.php?tab=system" class="admin-nav-link <?php echo $tab==='system'?'active':''; ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                Hệ thống
             </a>
             <button class="admin-nav-link" onclick="openPasswordModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -595,12 +616,224 @@ function buildQuery($overrides = []) {
         </div>
     </nav>
 
-<?php if ($tab === 'settings'): ?>
+<?php if ($tab === 'notification'): ?>
+<!-- =================== NOTIFICATION PAGE =================== -->
 <div class="admin-page-content">
     <div class="admin-page-header">
-        <h2>⚙️ Cài đặt hệ thống</h2>
+        <h2>📢 Cửa sổ thông báo (Modal)</h2>
     </div>
 
+    <div class="admin-settings-card">
+        <div class="admin-settings-card-header">
+            <h3>📢 Cấu hình Thông báo (Beta Modal)</h3>
+        </div>
+        <p class="admin-settings-desc">Cửa sổ này sẽ hiện ra một lần khi người dùng truy cập vào trang chủ.</p>
+        
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Kích hoạt thông báo</div>
+            <div style="flex: 1;">
+                <label class="admin-toggle-switch">
+                    <input type="checkbox" id="modal-enabled" <?php echo getSetting($db, 'modal_enabled', '1') === '1' ? 'checked' : ''; ?>>
+                    <span class="admin-toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Hiển thị nút Đóng</div>
+            <div style="flex: 1;">
+                <label class="admin-toggle-switch">
+                    <input type="checkbox" id="modal-close-enabled" <?php echo getSetting($db, 'modal_close_enabled', '1') === '1' ? 'checked' : ''; ?>>
+                    <span class="admin-toggle-slider"></span>
+                </label>
+                <small style="display: block; color: var(--text-dim); font-size: 0.7rem; margin-top: 4px;">Nếu tắt, người dùng bắt buộc phải nhấn vào nút hành động.</small>
+            </div>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Icon</div>
+            <input type="text" id="modal-icon" value="<?php echo htmlspecialchars(getSetting($db, 'modal_icon', '🧪')); ?>" placeholder="Ví dụ: 🧪, 🚀, 🎁..." class="admin-settings-input" style="width: 80px;">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Tiêu đề</div>
+            <input type="text" id="modal-title" value="<?php echo htmlspecialchars(getSetting($db, 'modal_title', 'Tăng 300% Chuyển Đổi TikTok')); ?>" placeholder="Tiêu đề thông báo..." class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Nội dung (Đoạn văn)</div>
+            <textarea id="modal-body" placeholder="Nội dung chính của thông báo..." class="admin-settings-input" style="height: 80px; padding: 10px;"><?php echo htmlspecialchars(getSetting($db, 'modal_body', 'Bạn đang mất đơn vì khách hàng phải đăng nhập lại trên trình duyệt? Hãy dùng thử **TikAff.net** - Giải pháp **Deep Link** tối ưu nhất hiện nay')); ?></textarea>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Danh sách<br>(Mỗi dòng 1 ý)</div>
+            <textarea id="modal-list" placeholder="🚀 **Test link:** Xác nhận Fans thấy Voucher 20%..." class="admin-settings-input" style="height: 100px; padding: 10px;"><?php echo htmlspecialchars(getSetting($db, 'modal_list', "🚀 **Mở App Ngay**: Tự động mở thẳng App TikTok\n💰 **Giữ Chân Khách**: Tăng tỷ lệ chuyển đổi.\n📊 **Thống Kê**: Theo dõi click và đơn hàng thời gian thực.")); ?></textarea>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Ghi chú<br>(Chữ nghiêng)</div>
+            <input type="text" id="modal-note" value="<?php echo htmlspecialchars(getSetting($db, 'modal_note', '* Giải pháp hoàn hảo cho KOC/Link Bio TikTok. Miễn phí 100%')); ?>" placeholder="Ghi chú nhỏ phía dưới..." class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Nhãn nút bấm</div>
+            <input type="text" id="modal-button" value="<?php echo htmlspecialchars(getSetting($db, 'modal_button', 'Khám phá TikAff ngay!')); ?>" placeholder="Chữ hiển thị trên nút..." class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Link nút bấm</div>
+            <input type="text" id="modal-button-url" value="<?php echo htmlspecialchars(getSetting($db, 'modal_button_url', 'https://tikaff.net/?ref=rutgon')); ?>" placeholder="https://... (Để trống nếu chỉ muốn đóng modal)" class="admin-settings-input">
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Mở tab mới</div>
+            <div style="flex: 1;">
+                <label class="admin-toggle-switch">
+                    <input type="checkbox" id="modal-button-new-tab" <?php echo getSetting($db, 'modal_button_new_tab', '1') === '1' ? 'checked' : ''; ?>>
+                    <span class="admin-toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="admin-settings-actions">
+            <button onclick="saveNotification()" class="admin-settings-save" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">💾 Lưu cấu hình thông báo</button>
+        </div>
+    </div>
+</div>
+
+<?php elseif ($tab === 'shopee'): ?>
+<!-- =================== SHOPEE PAGE =================== -->
+<div class="admin-page-content">
+    <div class="admin-page-header">
+        <h2 class="admin-page-title">🛒 Cấu hình Shopee</h2>
+    </div>
+    
+    <div class="admin-settings-card">
+        <div class="admin-settings-card-header">
+            <h3>🔑 Shopee Affiliate ID</h3>
+        </div>
+        <div class="admin-settings-row">
+            <div class="admin-settings-label" style="color: #ff5722; font-weight: 700;">Affiliate ID</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                <input type="text" id="shopee-aff-id" value="<?php echo htmlspecialchars(getSetting($db, 'shopee_aff_id', '')); ?>" placeholder="Ví dụ: 123456789" class="admin-settings-input">
+                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">ID này sẽ được dùng để tự động gắn vào link khi bạn sử dụng trang <b>convert.php</b>.</small>
+                <div>
+                    <a href="https://s.shopee.vn/1BIwkrvTU5" target="_blank" style="font-size: 0.75rem; color: #10b981; text-decoration: underline; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-external-link-alt"></i> Lấy Affiliate ID của bạn tại đây
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-settings-card" style="margin-top: 1.5rem;">
+        <div class="admin-settings-card-header">
+            <h3>🔗 Nút & Hướng dẫn</h3>
+        </div>
+        <div class="admin-settings-row">
+            <div class="admin-settings-label" style="color: #1877f2; font-weight: 700;">Link bài viết Shopee (Nút)</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                <input type="text" id="shopee-post-url" value="<?php echo htmlspecialchars(getSetting($db, 'shopee_post_url', '')); ?>" placeholder="Dán link bài viết Facebook/TikTok tại đây" class="admin-settings-input">
+                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">Link này sẽ được gắn vào nút <b>Đến bài viết</b> và phần hướng dẫn trong <b>convert.php</b>.</small>
+            </div>
+        </div>
+        
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Video Hướng Dẫn</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                <input type="url" id="site-video-url" value="<?php echo htmlspecialchars(getSetting($db, 'site_video_url', 'https://www.youtube.com/shorts/nj7U1OcOaX0')); ?>" placeholder="Link video YouTube..." class="admin-settings-input">
+                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">Video hướng dẫn hiển thị ở trang chủ Landing Page.</small>
+            </div>
+        </div>
+
+        <div class="admin-settings-actions">
+            <button onclick="saveShopee()" class="admin-settings-save" style="background: linear-gradient(135deg, #f97316, #ea580c);">💾 Lưu cấu hình Shopee</button>
+        </div>
+    </div>
+</div>
+
+<?php elseif ($tab === 'branding'): ?>
+<!-- =================== BRANDING PAGE =================== -->
+<div class="admin-page-content">
+    <div class="admin-page-header">
+        <h2 class="admin-page-title">🎨 Thương hiệu & Hình ảnh</h2>
+    </div>
+
+    <div class="admin-settings-card">
+        <div class="admin-settings-card-header">
+            <h3>🖼️ Logo & Favicon</h3>
+        </div>
+        
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Logo</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div class="admin-image-input-group">
+                    <input type="text" id="site-logo" oninput="updatePreview('site-logo')" value="<?php echo htmlspecialchars(getSetting($db, 'site_logo', 'image/logo.png')); ?>" placeholder="Link ảnh logo..." class="admin-settings-input">
+                    <button class="admin-upload-btn" onclick="triggerUpload('site-logo')" title="Tải ảnh lên server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                </div>
+                <div id="site-logo-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_logo')) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước Logo</div>
+                    <div class="admin-preview-container">
+                        <img id="site-logo-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_logo', 'image/logo.png')); ?>" style="max-height: 60px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Favicon</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div class="admin-image-input-group">
+                    <input type="text" id="site-favicon" oninput="updatePreview('site-favicon')" value="<?php echo htmlspecialchars(getSetting($db, 'site_favicon', 'image/favicon.png')); ?>" placeholder="Link ảnh favicon..." class="admin-settings-input">
+                    <button class="admin-upload-btn" onclick="triggerUpload('site-favicon')" title="Tải ảnh lên server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                </div>
+                <div id="site-favicon-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_favicon')) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước Favicon</div>
+                    <div class="admin-preview-container">
+                        <img id="site-favicon-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_favicon', 'image/favicon.png')); ?>" style="width: 32px; height: 32px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-settings-row">
+            <div class="admin-settings-label">Ảnh OG (Share)</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div class="admin-image-input-group">
+                    <input type="text" id="site-og-image" oninput="updatePreview('site-og-image')" value="<?php echo htmlspecialchars(getSetting($db, 'site_og_image', 'image/og.jpg')); ?>" placeholder="Link ảnh khi chia sẻ..." class="admin-settings-input">
+                    <button class="admin-upload-btn" onclick="triggerUpload('site-og-image')" title="Tải ảnh lên server">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </button>
+                </div>
+                <div id="site-og-image-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_og_image')) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước Ảnh Share (1200x630)</div>
+                    <div class="admin-preview-container">
+                        <img id="site-og-image-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_og_image', 'image/og.jpg')); ?>" style="max-width: 100%; max-height: 150px; border-radius: 4px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-settings-actions">
+            <button onclick="saveBrandingOnly()" class="admin-settings-save" style="background: linear-gradient(135deg, #ec4899, #db2777);">💾 Lưu bộ nhận diện</button>
+        </div>
+    </div>
+    
+    <input type="file" id="admin-image-uploader" style="display:none;" onchange="handleImageUpload(this)" accept="image/*">
+</div>
+
+<?php elseif ($tab === 'settings'): ?>
+<!-- =================== SETTINGS PAGE =================== -->
+<div class="admin-page-content">
+    <div class="admin-page-header">
+        <h2 class="admin-page-title">⚙️ Cài đặt hệ thống</h2>
+    </div>
+
+    <!-- Custom Domain -->
     <div class="admin-settings-card">
         <div class="admin-settings-card-header">
             <h3>🌐 Tên miền phụ (Custom Domain)</h3>
@@ -617,9 +850,10 @@ function buildQuery($overrides = []) {
         </div>
     </div>
 
+    <!-- Branding & SEO -->
     <div class="admin-settings-card" style="margin-top: 1.2rem;">
         <div class="admin-settings-card-header">
-            <h3>🎨 Thương hiệu & SEO</h3>
+            <h3>🎨 Meta & SEO</h3>
         </div>
         <p class="admin-settings-desc">Tùy chỉnh thông tin hiển thị của website, Logo và các thẻ Meta SEO.</p>
         
@@ -644,150 +878,124 @@ function buildQuery($overrides = []) {
         </div>
 
         <div class="admin-settings-row">
-            <div class="admin-settings-label">Logo</div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                <div class="admin-image-input-group">
-                    <input type="text" id="site-logo" oninput="updatePreview('site-logo')" value="<?php echo htmlspecialchars(getSetting($db, 'site_logo', 'image/favicon.png')); ?>" placeholder="Link ảnh logo..." class="admin-settings-input">
-                    <button class="admin-upload-btn" onclick="triggerUpload('site-logo')" title="Tải ảnh lên server">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    </button>
-                </div>
-                <div id="site-logo-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_logo')) ? 'display:none;' : ''; ?>">
-                    <div class="admin-preview-label">Xem trước Logo</div>
-                    <div class="admin-preview-container">
-                        <img id="site-logo-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_logo', 'image/favicon.png')); ?>?v=<?php echo time(); ?>" style="max-height: 60px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Favicon</div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                <div class="admin-image-input-group">
-                    <input type="text" id="site-favicon" oninput="updatePreview('site-favicon')" value="<?php echo htmlspecialchars(getSetting($db, 'site_favicon', 'image/favicon.png')); ?>" placeholder="Link ảnh favicon..." class="admin-settings-input">
-                    <button class="admin-upload-btn" onclick="triggerUpload('site-favicon')" title="Tải ảnh lên server">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    </button>
-                </div>
-                <div id="site-favicon-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_favicon')) ? 'display:none;' : ''; ?>">
-                    <div class="admin-preview-label">Xem trước Favicon</div>
-                    <div class="admin-preview-container">
-                        <img id="site-favicon-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_favicon', 'image/favicon.png')); ?>?v=<?php echo time(); ?>" style="width: 32px; height: 32px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Ảnh OG (Share)</div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                <div class="admin-image-input-group">
-                    <input type="text" id="site-og-image" oninput="updatePreview('site-og-image')" value="<?php echo htmlspecialchars(getSetting($db, 'site_og_image', 'image/og.jpg')); ?>" placeholder="Link ảnh khi chia sẻ..." class="admin-settings-input">
-                    <button class="admin-upload-btn" onclick="triggerUpload('site-og-image')" title="Tải ảnh lên server">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    </button>
-                </div>
-                <div id="site-og-image-preview-box" class="admin-preview-box" style="<?php echo empty(getSetting($db, 'site_og_image')) ? 'display:none;' : ''; ?>">
-                    <div class="admin-preview-label">Xem trước Ảnh Share (1200x630)</div>
-                    <div class="admin-preview-container">
-                        <img id="site-og-image-preview" src="<?php echo htmlspecialchars(getSetting($db, 'site_og_image', 'image/og.jpg')); ?>?v=<?php echo time(); ?>" style="max-width: 100%; max-height: 150px; border-radius: 4px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Video Hướng Dẫn <span style="font-size: 0.75rem; color: #94a3b8; font-weight: normal; margin-left: 5px;">(Hiển thị ở Landing)</span></div>
-            <input type="url" id="site-video-url" value="<?php echo htmlspecialchars(getSetting($db, 'site_video_url', 'https://www.youtube.com/shorts/nj7U1OcOaX0')); ?>" placeholder="Link video YouTube..." class="admin-settings-input">
-        </div>
-
-        <div class="admin-settings-row" style="background: rgba(59, 130, 246, 0.05); padding: 15px; border-radius: 12px; border: 1px dashed rgba(59, 130, 246, 0.3);">
-            <div class="admin-settings-label" style="color: var(--primary); font-weight: 700;">Facebook Access Token</div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
-                <input type="text" id="site-fb-token" value="<?php echo htmlspecialchars(getSetting($db, 'site_fb_token', '')); ?>" placeholder="Dán Token Facebook (AppID|AppSecret) vào đây..." class="admin-settings-input">
-                <small style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5; margin-top: 8px; display: block; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px;">
-                    <strong>🛠️ Cách lấy Access Token:</strong><br>
-                    1. Truy cập <a href="https://developers.facebook.com/apps" target="_blank" style="color: var(--primary); font-weight: bold; text-decoration: underline;">Facebook Developers</a> và tạo 1 App.<br>
-                    2. Vào <b>Cài đặt (Settings) &gt; Cơ bản (Basic)</b>.<br>
-                    3. Copy <b>ID ứng dụng (App ID)</b> và <b>Khóa bí mật (App Secret)</b>.<br>
-                    4. Dán vào ô trên theo định dạng: <code>AppID|AppSecret</code>
-                </small>
-                <small style="color: #ef4444; font-size: 0.65rem; margin-top: 5px; display: block; font-weight: 600;">* Để trống nếu không muốn tự động debug/scrape link lên Facebook.</small>
-            </div>
-        </div>
-
-        <div class="admin-settings-row">
             <div class="admin-settings-label">Google Analytics ID</div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
                 <input type="text" id="site-gtag_id" value="<?php echo htmlspecialchars(getSetting($db, 'site_gtag_id', '')); ?>" placeholder="Ví dụ: G-2J658TM292" class="admin-settings-input">
-                <small style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 10px; border-left: 3px solid var(--primary);">
-                    <strong>💡 Cách lấy mã theo dõi:</strong><br>
-                    1. Truy cập <a href="https://analytics.google.com/" target="_blank" style="color: var(--primary); font-weight: bold;">Google Analytics</a>.<br>
-                    2. Đi tới <b>Quản trị (Admin) &gt; Luồng dữ liệu (Data Streams)</b>.<br>
-                    3. Chọn luồng web của bạn và copy <b>Mã đo lường (Measurement ID)</b> có dạng <code>G-XXXXXXXXXX</code>.
+                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8; line-height: 1.5; display: block; margin-top: 5px;">
+                    <b>Cách lấy mã:</b><br>
+                    1. Truy cập <a href="https://analytics.google.com" target="_blank" style="color: var(--primary); text-decoration: underline;">Google Analytics</a>.<br>
+                    2. Vào <b>Quản trị (Admin)</b> &gt; <b>Luồng dữ liệu (Data Streams)</b>.<br>
+                    3. Chọn luồng Web của bạn &gt; Copy mã <b>Measurement ID</b> (dạng <code>G-XXXXX</code>).
                 </small>
             </div>
         </div>
 
-        <div class="admin-settings-row">
-            <div class="admin-settings-label">Link chuyển hướng 404</div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+            <div class="admin-settings-row">
+                <div class="admin-settings-label">Link chuyển hướng 404</div>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
                 <?php 
                 $current_404 = getSetting($db, 'site_404_redirect', 'https://affreel.com');
                 if (empty($current_404)) $current_404 = 'https://affreel.com';
                 ?>
                 <input type="text" id="site-404-redirect" value="<?php echo htmlspecialchars($current_404); ?>" placeholder="Ví dụ: https://affreel.com hoặc /index.php" class="admin-settings-input">
-                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8; line-height: 1.5; display: block; margin-top: 5px;">
-                    Link sẽ được chuyển hướng đến khi người dùng truy cập vào một link rút gọn không tồn tại.
+                    <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8; line-height: 1.5; display: block; margin-top: 5px;">
+                        Link sẽ được chuyển hướng đến khi người dùng truy cập vào một link rút gọn không tồn tại.
+                    </small>
+                </div>
+            </div>
+
+        <div class="admin-settings-actions">
+            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu cấu hình Branding</button>
+        </div>
+    </div>
+
+    <div class="admin-settings-card" style="margin-top: 1.5rem;">
+        <div class="admin-settings-card-header">
+            <h3>👥 Facebook API & Scrape</h3>
+        </div>
+        <div class="admin-settings-row" style="background: rgba(59, 130, 246, 0.05); padding: 15px; border-radius: 12px; border: 1px dashed rgba(59, 130, 246, 0.3);">
+            <div class="admin-settings-label" style="color: var(--primary); font-weight: 700;">Facebook Access Token</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="site-fb-token" value="<?php echo htmlspecialchars(getSetting($db, 'site_fb_token', '')); ?>" placeholder="EAA..." class="admin-settings-input">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <small style="color: var(--text-dim); font-size: 0.7rem; margin-bottom: 4px; display: block;">App ID (Tùy chọn)</small>
+                        <input type="text" id="site-fb-app-id" value="<?php echo htmlspecialchars(getSetting($db, 'site_fb_app_id', '')); ?>" placeholder="12345..." class="admin-settings-input">
+                    </div>
+                    <div style="flex: 1;">
+                        <small style="color: var(--text-dim); font-size: 0.7rem; margin-bottom: 4px; display: block;">App Secret (Tùy chọn)</small>
+                        <input type="password" id="site-fb-app-secret" value="<?php echo htmlspecialchars(getSetting($db, 'site_fb_app_secret', '')); ?>" placeholder="abcde..." class="admin-settings-input">
+                    </div>
+                </div>
+                <small style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5; margin-top: 5px; display: block; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px;">
+                    <strong>🛠️ Cách lấy Access Token:</strong><br>
+                    1. Truy cập <a href="https://developers.facebook.com/apps" target="_blank" style="color: var(--primary); font-weight: bold; text-decoration: underline;">Facebook Developers</a> và tạo 1 App.<br>
+                    2. Vào <b>Cài đặt (Settings) &gt; Cơ bản (Basic)</b>.<br>
+                    3. Copy <b>ID ứng dụng (App ID)</b> và <b>Khóa bí mật (App Secret)</b> dán vào 2 ô trên.<br>
+                    4. Dùng <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color: var(--primary); text-decoration: underline;">Graph API Explorer</a> lấy User Token dán vào ô Token chính.
                 </small>
             </div>
         </div>
+        <div class="admin-settings-actions">
+            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">💾 Lưu cấu hình Facebook</button>
+        </div>
+    </div>
 
-        <div class="admin-settings-row" style="background: rgba(16, 185, 129, 0.03); padding: 20px; border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3); margin-top: 15px;">
-            <div class="admin-settings-label" style="color: #10b981; font-weight: 700; font-size: 1rem;"><i class="fas fa-qrcode"></i> QR Donate</div>
+    <div class="admin-settings-card" style="margin-top: 1.5rem;">
+        <div class="admin-settings-card-header">
+            <h3>💰 QR Donate</h3>
+        </div>
+        <div class="admin-settings-row" style="background: rgba(16, 185, 129, 0.03); padding: 20px; border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3);">
+            <div class="admin-settings-label" style="color: #10b981; font-weight: 700; font-size: 1rem;"><i class="fas fa-qrcode"></i> QR</div>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                     <label class="admin-toggle-switch">
-                        <input type="checkbox" id="donate-qr-enabled" <?php echo getSetting($db, 'donate_qr_enabled', '0') === '1' ? 'checked' : ''; ?>>
+                        <input type="checkbox" id="donate-qr-enabled" <?php echo getSetting($db, 'donate_qr_enabled', '1') === '1' ? 'checked' : ''; ?>>
                         <span class="admin-toggle-slider"></span>
                     </label>
-                    <span style="font-size: 0.9rem; color: #ffffff; font-weight: 600;">Kích hoạt hiển thị QR riêng sau khi tạo link</span>
+                    <span style="font-size: 0.9rem; color: #ffffff; font-weight: 600;">Kích hoạt hiển thị QR sau khi tạo link</span>
                 </div>
                 <div class="admin-image-input-group">
                     <?php 
-                        $db_qr = getSetting($db, 'donate_qr_url', '');
+                        $local_qr = getSetting($db, 'donate_qr_url');
                         $master_qr = getSetting($db, 'master_donate_qr_url', 'https://qr.sepay.vn/img?bank=Techcombank&acc=7679696999&template=&amount=&des=DonateAffReel');
-                        $display_preview_qr = !empty($db_qr) ? $db_qr : $master_qr;
+                        $display_qr = !empty($local_qr) ? $local_qr : $master_qr;
                     ?>
-                    <input type="text" id="donate-qr-url" oninput="updatePreview('donate-qr-url')" value="<?php echo htmlspecialchars($db_qr); ?>" placeholder="Để trống để dùng QR hệ thống..." class="admin-settings-input">
+                    <input type="text" id="donate-qr-url" oninput="updatePreview('donate-qr-url')" value="<?php echo htmlspecialchars($display_qr); ?>" placeholder="Link ảnh QR Donate..." class="admin-settings-input">
                     <button class="admin-upload-btn" onclick="triggerUpload('donate-qr-url')" title="Tải ảnh lên server">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     </button>
                 </div>
-                <div id="donate-qr-url-preview-box" class="admin-preview-box" style="<?php echo empty($display_preview_qr) ? 'display:none;' : ''; ?>">
-                    <div class="admin-preview-label">Xem trước QR (<?php echo empty($db_qr) ? 'Mặc định hệ thống' : 'Cá nhân'; ?>)</div>
+                <div style="margin-top: -5px; margin-bottom: 5px;">
+                    <a href="https://my.sepay.vn/createqr?gcid=286" target="_blank" style="color: #10b981; font-size: 0.8rem; text-decoration: underline; font-weight: 600;">
+                        <i class="fas fa-external-link-alt"></i> Lấy mã QR Code tại đây
+                    </a>
+                </div>
+                <div id="donate-qr-url-preview-box" class="admin-preview-box" style="<?php echo empty($display_qr) ? 'display:none;' : ''; ?>">
+                    <div class="admin-preview-label">Xem trước QR Donate</div>
                     <div class="admin-preview-container" style="background: #fff; padding: 10px;">
-                        <img id="donate-qr-url-preview" src="<?php echo htmlspecialchars($display_preview_qr); ?>?v=<?php echo time(); ?>" style="width: 140px; height: 140px; border-radius: 8px;">
+                        <img id="donate-qr-url-preview" src="<?php echo htmlspecialchars($display_qr); ?>" style="width: 140px; height: 140px; border-radius: 8px;">
                     </div>
                 </div>
-                <small style="display: block; width: 100%; color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">
-                    * <strong>Để trống:</strong> Tự động cập nhật theo QR từ AffReel.com.<br>
-                    * <strong>Điền link/Upload:</strong> Sử dụng QR riêng của bạn (ưu tiên).
-                </small>
+                <small style="display: block; width: 100%; color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">* Link này sẽ được hiển thị ở trang kết quả rút gọn.</small>
             </div>
         </div>
-
         <div class="admin-settings-actions">
-            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu tất cả cài đặt</button>
+            <button onclick="saveBranding()" class="admin-settings-save" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Lưu cấu hình QR</button>
         </div>
-        
-        <input type="file" id="admin-image-uploader" style="display:none;" onchange="handleImageUpload(this)" accept="image/*">
+    </div>
+</div>
+
+<?php elseif ($tab === 'system'): ?>
+<!-- =================== SYSTEM PAGE =================== -->
+<div class="admin-page-content">
+    <div class="admin-page-header">
+        <h2 class="admin-page-title">⚙️ Thông tin hệ thống</h2>
     </div>
 
-    <div class="admin-settings-card" style="margin-top: 1.2rem;">
+    <div class="admin-settings-card">
         <div class="admin-settings-card-header">
-            <h3>📋 Thông tin hệ thống</h3>
+            <h3>📋 Thông số máy chủ</h3>
         </div>
         <div class="admin-settings-row">
             <div class="admin-settings-label">Tên miền chính</div>
@@ -803,14 +1011,14 @@ function buildQuery($overrides = []) {
         </div>
         <div class="admin-settings-row">
             <div class="admin-settings-label">Database</div>
-            <div class="admin-settings-value"><code><?php echo DB_FILE; ?></code> (<?php echo round(filesize(DB_FILE)/1024, 1); ?> KB)</div>
+            <div class="admin-settings-value"><code><?php echo DB_FILE; ?></code> (<?php echo round(@filesize(DB_FILE)/1024, 1); ?> KB)</div>
         </div>
         <div class="admin-settings-row">
+            <div class="admin-settings-label">Bảo mật</div>
             <div class="admin-settings-value">Mã hóa bcrypt · <a href="#" onclick="openPasswordModal(); return false;" style="color: var(--primary);">Đổi mật khẩu</a></div>
         </div>
     </div>
 </div>
-
 <?php else: ?>
 
     <div class="admin-banners-grid">
@@ -1153,7 +1361,47 @@ function updatePreview(id) {
         previewBox.style.display = 'none';
     }
 }
+function saveShopee() {
+    const fd = new FormData();
+    fd.append('save_shopee', '1');
+    fd.append('shopee_aff_id', document.getElementById('shopee-aff-id').value.trim());
+    fd.append('shopee_post_url', document.getElementById('shopee-post-url').value.trim());
+    fd.append('site_video_url', document.getElementById('site-video-url').value.trim());
+    
+    fetch('admin.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            showToast(data.success ? '✅ ' + data.message : '❌ ' + data.message, !data.success);
+            if (data.success) setTimeout(() => location.reload(), 800);
+        });
+}
 
+function saveBrandingOnly() {
+    const fd = new FormData();
+    fd.append('save_branding_only', '1');
+    fd.append('site_logo', document.getElementById('site-logo').value.trim());
+    fd.append('site_favicon', document.getElementById('site-favicon').value.trim());
+    fd.append('site_og_image', document.getElementById('site-og-image').value.trim());
+    
+    fetch('admin.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+            showToast(data.success ? '✅ ' + data.message : '❌ ' + data.message, !data.success);
+            if (data.success) setTimeout(() => location.reload(), 800);
+        });
+}
+
+function saveBranding() {
+    const fd = new FormData();
+    fd.append('save_settings_only', '1');
+    fd.append('site_title', document.getElementById('site-title').value.trim());
+    fd.append('site_desc', document.getElementById('site-desc').value.trim());
+    fd.append('site_keywords', document.getElementById('site-keywords').value.trim());
+    fd.append('site_author', document.getElementById('site-author').value.trim());
+    fd.append('site_gtag_id', document.getElementById('site-gtag_id').value.trim());
+    fd.append('site_fb_token', document.getElementById('site-fb-token').value.trim());
+    fd.append('site_fb_app_id', document.getElementById('site-fb-app-id').value.trim());
+    fd.append('site_fb_app_secret', document.getElementById('site-fb-app-secret').value.trim());
     fd.append('donate_qr_enabled', document.getElementById('donate-qr-enabled').checked ? '1' : '0');
     fd.append('donate_qr_url', document.getElementById('donate-qr-url').value.trim());
     fd.append('site_404_redirect', document.getElementById('site-404-redirect').value.trim());
@@ -1170,6 +1418,7 @@ function saveNotification() {
     const fd = new FormData();
     fd.append('save_notification', '1');
     fd.append('modal_enabled', document.getElementById('modal-enabled').checked ? '1' : '0');
+    fd.append('modal_close_enabled', document.getElementById('modal-close-enabled').checked ? '1' : '0');
     fd.append('modal_icon', document.getElementById('modal-icon').value.trim());
     fd.append('modal_title', document.getElementById('modal-title').value.trim());
     fd.append('modal_body', document.getElementById('modal-body').value.trim());

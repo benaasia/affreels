@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 define('DB_FILE', 'links.db');
 require_once 'remote_api_helper.php';
@@ -18,8 +19,9 @@ try {
 // Tự động đồng bộ QR từ main site mỗi khi truy cập trang cài đặt
 smartCheckAPIStatus();
 
-$message = '';
-$message_type = 'success';
+$message = $_SESSION['flash_message'] ?? '';
+$message_type = $_SESSION['flash_type'] ?? 'success';
+unset($_SESSION['flash_message'], $_SESSION['flash_type']);
 
 $current_key = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,11 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Đồng bộ lại sau khi lưu
         smartCheckAPIStatus();
 
-        $message = "Cấu hình đã được lưu thành công!";
+        $_SESSION['flash_message'] = "Cấu hình đã được lưu thành công!";
+        $_SESSION['flash_type'] = 'success';
     } catch (PDOException $e) {
-        $message = "Lỗi lưu cấu hình: " . $e->getMessage();
-        $message_type = 'error';
+        $_SESSION['flash_message'] = "Lỗi lưu cấu hình: " . $e->getMessage();
+        $_SESSION['flash_type'] = 'error';
     }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
 } else {
     // Lấy cấu hình hiện tại nếu không phải POST
     $stmt_settings = $db->query("SELECT value FROM settings WHERE key = 'remote_api_key' LIMIT 1");
