@@ -575,8 +575,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
                             </div>
                         </div>
                     </div>
-
                 </div>
+                <footer style="text-align: center; margin-top: 1.5rem; padding-bottom: 2rem; color: #999; font-size: 0.85rem;">
+                    Designed by <a href="https://affreel.com" target="_blank" style="color: var(--shopee-orange); text-decoration: none; font-weight: 600;">Affreel.com</a>
+                </footer>
             </div>
         </main>
     </div>
