@@ -297,8 +297,10 @@ try {
     if (isset($settings_tmp['site_logo'])) $site_logo = $settings_tmp['site_logo'];
     if (isset($settings_tmp['site_favicon'])) $site_favicon = $settings_tmp['site_favicon'];
     if (isset($settings_tmp['site_gtag_id'])) $site_gtag_id = $settings_tmp['site_gtag_id'];
+    if (isset($settings_tmp['shopee_post_url'])) $shopee_post_url = $settings_tmp['shopee_post_url'];
 } catch (Exception $e) {}
 $site_gtag_id = $site_gtag_id ?? '';
+$shopee_post_url = $shopee_post_url ?? '#';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -330,6 +332,75 @@ $site_gtag_id = $site_gtag_id ?? '';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>const REELSLINK_API_KEY = "<?php echo API_KEY; ?>";</script>
     <style>
+        /* Styles for Go to Post button and instructions */
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin-top: 1.5rem;
+        }
+        .action-btn {
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+        .btn-copy-main { background: rgba(238, 77, 45, 0.1); color: #ee4d2d; border: 1.5px solid #ee4d2d; }
+        .btn-copy-main:hover { background: #ee4d2d; color: white; }
+        .btn-visit-post { background: #1877f2; color: white; border-color: #1877f2; }
+        .btn-visit-post:hover { background: #1565c0; transform: translateY(-2px); }
+
+        .instruction-card {
+            background: rgba(238, 77, 45, 0.03);
+            padding: 0;
+            border-radius: 20px;
+            border: 1.5px dashed var(--primary);
+            overflow: hidden;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+        .instruction-header {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        .instruction-body { padding: 1.2rem; color: var(--text-main); }
+        .instruction-list { list-style: none; padding-left: 0; margin: 0; }
+        .instruction-list li { margin-bottom: 10px; font-size: 0.9rem; line-height: 1.5; }
+        .instruction-list li b { color: var(--primary); }
+        .guide-btn-link { display: inline-flex; align-items: center; gap: 5px; color: #1877f2; text-decoration: none; font-weight: 700; margin-left: 20px; margin-top: 5px; }
+
+        /* Fix footer: remove boxy background and border */
+        .app-footer {
+            background: transparent !important;
+            border-top: none !important;
+            padding-top: 3rem !important;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 480px) {
+            .actions-row { grid-template-columns: 1fr 1fr; gap: 8px; padding: 0.8rem; }
+            .action-btn { height: 42px; font-size: 0.8rem; gap: 5px; }
+        }
+
         @media (max-width: 992px) {
             /* Mobile Top Header */
             .mobile-header {
@@ -424,6 +495,7 @@ $site_gtag_id = $site_gtag_id ?? '';
             .main-content-scroll { padding: 70px 1rem 80px 1rem !important; }
             .hide-on-mobile { display: none !important; }
             .show-on-mobile { display: inline-block !important; }
+            
             
             .mobile-header { 
                 display: flex !important; 
@@ -667,6 +739,34 @@ $site_gtag_id = $site_gtag_id ?? '';
                                 <svg class="icon-copy" style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                                 <svg class="icon-check" style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </button>
+                        </div>
+                    </div>
+                    
+                    <div class="actions-row" id="actions-row" style="display: none;">
+                        <button class="action-btn btn-copy-main" onclick="copyMainResult()">
+                            <i class="fas fa-link"></i> Sao chép link
+                        </button>
+                        <a href="<?php echo htmlspecialchars($shopee_post_url); ?>" id="visit-post-btn" target="_blank" class="action-btn btn-visit-post">
+                            <i class="fab fa-facebook-f"></i> Đến bài đăng
+                        </a>
+                    </div>
+
+                    <!-- Hướng dẫn nhận mã -->
+                    <div class="instruction-card" id="instruction-section" style="display: none;">
+                        <div class="instruction-header">
+                            <i class="far fa-lightbulb"></i> Hướng dẫn nhận mã
+                        </div>
+                        <div class="instruction-body">
+                            <ul class="instruction-list">
+                                <li>1. Bạn hãy nhấn "🔗 <b>Sao chép link</b>" màu cam ở trên</li>
+                                <li>2. Dán link dưới bình luận bài đăng này:</li>
+                            </ul>
+                            <a href="<?php echo htmlspecialchars($shopee_post_url); ?>" id="guide-link" target="_blank" class="guide-btn-link">
+                                👉 Nhấn vào đây để đến bài đăng
+                            </a>
+                            <ul class="instruction-list" style="margin-top: 12px;">
+                                <li>3. Click vào link để mở Shopee sẽ nhận được mã.</li>
+                            </ul>
                         </div>
                     </div>
 
