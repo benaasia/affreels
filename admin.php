@@ -891,7 +891,7 @@ function buildQuery($overrides = []) {
         </div>
 
             <div class="admin-settings-row">
-                <div class="admin-settings-label">Link chuyển hướng 404</div>
+                <div class="admin-settings-label">Chuyển hướng 404</div>
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
                 <?php 
                 $current_404 = getSetting($db, 'site_404_redirect', 'https://affreel.com');
@@ -914,7 +914,7 @@ function buildQuery($overrides = []) {
             <h3>👥 Facebook API & Scrape</h3>
         </div>
         <div class="admin-settings-row" style="background: rgba(59, 130, 246, 0.05); padding: 15px; border-radius: 12px; border: 1px dashed rgba(59, 130, 246, 0.3);">
-            <div class="admin-settings-label" style="color: var(--primary); font-weight: 700;">Facebook Access Token</div>
+            <div class="admin-settings-label" style="color: var(--primary); font-weight: 700;">Fb Access Token</div>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
                 <input type="text" id="site-fb-token" value="<?php echo htmlspecialchars(getSetting($db, 'site_fb_token', '')); ?>" placeholder="EAA..." class="admin-settings-input">
                 <div style="display: flex; gap: 10px;">
