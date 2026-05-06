@@ -29,3 +29,4 @@ git clone https://github.com/benaasia/affreels.git .
 
 ## 📧 Hỗ trợ
 Liên hệ hỗ trợ qua Telegram: [https://t.me/shortlinkone](https://t.me/shortlinkone)
+- **Hỗ trợ cài đặt có tính phí:** Cấu hình toàn bộ domain, logo, bot scrape Facebook và hướng dẫn sử dụng chi tiết.
