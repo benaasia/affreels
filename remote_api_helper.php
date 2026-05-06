@@ -4,14 +4,7 @@ function callRemoteAPI($endpoint, $data = []) {
 
     // Tự động lấy cấu hình nếu biến global bị trống
     if (empty($remote_api_url) || empty($remote_api_key)) {
-        // Tự động nhận diện domain API (Local Laragon hỗ trợ .test)
-        $host = $_SERVER['HTTP_HOST'] ?? '';
         $remote_api_url = 'https://api.affreel.com/v1'; 
-        /* 
-        if (strpos($host, '.test') !== false || $host === 'localhost' || strpos($host, '127.0.0.1') !== false) {
-            $remote_api_url = 'http://localhost/apiaffreel/master_api/api.php';
-        }
-        */
 
         try {
             $db_temp = new PDO("sqlite:" . __DIR__ . "/links.db");
@@ -23,14 +16,8 @@ function callRemoteAPI($endpoint, $data = []) {
         } catch (Exception $e) {}
     }
 
-    // Đảm bảo cuối cùng không bị trống
     if (empty($remote_api_url)) {
-        $host = $_SERVER['HTTP_HOST'] ?? '';
-        if (strpos($host, '.test') !== false || $host === 'localhost' || strpos($host, '127.0.0.1') !== false) {
-            $remote_api_url = 'https://api.affreel.com/v1'; // Đã đổi sang remote thực
-        } else {
-            $remote_api_url = 'https://api.affreel.com/v1';
-        }
+        $remote_api_url = 'https://api.affreel.com/v1';
     }
     if (empty($remote_api_key)) $remote_api_key = 'FREE-85C45DDDBF3CEADB';
 
