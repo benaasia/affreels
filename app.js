@@ -188,6 +188,33 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Hàm copy link chính cho nút to mới
+    window.copyMainResult = function() {
+        // Ưu tiên copy link Redir (Voucher độc quyền) nếu đang ở tab Shopee
+        let text = '';
+        if (shopeeResultDetails && shopeeResultDetails.style.display !== 'none') {
+            text = redirLinkDisplay.textContent;
+        } else {
+            text = shortLinkDisplay.textContent;
+        }
+        
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.btn-copy-main');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Đã sao chép!';
+            btn.style.background = '#10b981';
+            btn.style.borderColor = '#10b981';
+            btn.style.color = 'white';
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+            }, 2000);
+        });
+    }
+
     function setLoading(isLoading) {
         const btnText = extractBtn.querySelector('.btn-text');
         if (isLoading) {
@@ -242,6 +269,10 @@ document.addEventListener("DOMContentLoaded", () => {
             showStatus('');
             resultSection.style.display = 'none';
             fallbackSection.style.display = 'none';
+            const actionRow = document.getElementById('actions-row');
+            const instructSec = document.getElementById('instruction-section');
+            if (actionRow) actionRow.style.display = 'none';
+            if (instructSec) instructSec.style.display = 'none';
         });
     });
 
@@ -449,6 +480,10 @@ document.addEventListener("DOMContentLoaded", () => {
         showStatus('');
         resultSection.style.display = 'none';
         fallbackSection.style.display = 'none';
+        const actionRow = document.getElementById('actions-row');
+        const instructSec = document.getElementById('instruction-section');
+        if (actionRow) actionRow.style.display = 'none';
+        if (instructSec) instructSec.style.display = 'none';
         setLoading(true);
 
         try {
@@ -481,6 +516,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (longLinkSection) longLinkSection.style.display = 'block';
                 }
                 resultSection.style.display = 'block';
+                const actionRow = document.getElementById('actions-row');
+                const instructSec = document.getElementById('instruction-section');
+                if (actionRow) actionRow.style.display = 'grid';
+                if (instructSec) instructSec.style.display = 'block';
+                
                 const donateSection = document.getElementById('donate-qr-container');
                 if (donateSection) donateSection.style.display = 'block';
                 
