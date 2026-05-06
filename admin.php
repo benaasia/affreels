@@ -731,7 +731,7 @@ function buildQuery($overrides = []) {
             <h3>🔗 Nút & Hướng dẫn</h3>
         </div>
         <div class="admin-settings-row">
-            <div class="admin-settings-label" style="color: #1877f2; font-weight: 700;">Link bài viết Shopee (Nút)</div>
+            <div class="admin-settings-label" style="color: #1877f2; font-weight: 700;">Bài viết Facebook</div>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
                 <input type="text" id="shopee-post-url" value="<?php echo htmlspecialchars(getSetting($db, 'shopee_post_url', '')); ?>" placeholder="Dán link bài viết Facebook/TikTok tại đây" class="admin-settings-input">
                 <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">Link này sẽ được gắn vào nút <b>Đến bài viết</b> và phần hướng dẫn trong <b>convert.php</b>.</small>
