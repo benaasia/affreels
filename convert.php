@@ -67,6 +67,41 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
 
     $final_dest = $api_res['link'] ?? $api_res['url'] ?? '';
     $api_title = $api_res['title'] ?? '';
+    $api_image = $api_res['image'] ?? '';
+
+    // --- FALLBACK: Nếu API không trả về Title hoặc Image, thử lấy trực tiếp từ Shopee ---
+    if ((empty($api_title) || empty($api_image)) && !empty($final_dest)) {
+        // Thử cURL với Facebook User-Agent để lấy OG tags trước
+        $ch_f = curl_init($final_dest);
+        curl_setopt($ch_f, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch_f, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch_f, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch_f, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch_f, CURLOPT_USERAGENT, 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)');
+        curl_setopt($ch_f, CURLOPT_HTTPHEADER, [
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language: vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Cache-Control: no-cache',
+            'Pragma: no-cache'
+        ]);
+        $html_f = curl_exec($ch_f);
+        curl_close($ch_f);
+        
+        if ($html_f) {
+            if (empty($api_title)) {
+                if (preg_match('/<meta property="og:title" content="([^"]+)"/i', $html_f, $m)) {
+                    $api_title = html_entity_decode($m[1], ENT_QUOTES, 'UTF-8');
+                } elseif (preg_match('/<title>([^<]+)<\/title>/i', $html_f, $m)) {
+                    $api_title = html_entity_decode($m[1], ENT_QUOTES, 'UTF-8');
+                }
+            }
+            if (empty($api_image)) {
+                if (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html_f, $m)) {
+                    $api_image = $m[1];
+                }
+            }
+        }
+    }
 
     if (empty($final_dest)) {
         echo json_encode(['success' => false, 'message' => 'Không tìm thấy link Shopee.']);
@@ -75,6 +110,33 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
 
     $clean_url = strtok($final_dest, '?');
     
+    // --- BỔ SUNG: Sử dụng Shopee API Nội bộ để lấy thông tin chuẩn ---
+    if (preg_match('/i\.(\d+)\.(\d+)/', $clean_url, $matches) || preg_match('/\/(\d+)\/(\d+)/', $clean_url, $matches)) {
+        $shop_id = $matches[1];
+        $item_id = $matches[2];
+        
+        if (empty($api_title) || empty($api_image)) {
+            $shopee_api_url = "https://shopee.vn/api/v4/item/get?itemid=$item_id&shopid=$shop_id";
+            $ch_s = curl_init($shopee_api_url);
+            curl_setopt($ch_s, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch_s, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch_s, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch_s, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
+            curl_setopt($ch_s, CURLOPT_HTTPHEADER, ["Referer: https://shopee.vn/"]);
+            $res_s = curl_exec($ch_s);
+            curl_close($ch_s);
+            
+            $data_s = json_decode($res_s, true);
+            if (!empty($data_s['data'])) {
+                if (empty($api_title)) $api_title = $data_s['data']['name'] ?? '';
+                if (empty($api_image) && !empty($data_s['data']['image'])) {
+                    $api_image = "https://down-vn.img.susercontent.com/file/" . $data_s['data']['image'];
+                }
+            }
+        }
+        $clean_url = "https://shopee.vn/opaanlp/{$shop_id}/{$item_id}";
+    }
+
     $product_name = 'Sản phẩm Shopee';
     if (!empty($api_title) && strtolower($api_title) !== 'shopee') {
         $product_name = $api_title;
@@ -87,7 +149,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
                 $found_name = $parts[0];
             }
         }
-        
         if (empty($found_name)) {
             $path_in = parse_url($input_url, PHP_URL_PATH);
             if ($path_in) {
@@ -97,17 +158,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
                 }
             }
         }
-
         if (!empty($found_name)) {
             $product_name = str_replace('-', ' ', $found_name);
             $product_name = mb_convert_case($product_name, MB_CASE_TITLE, "UTF-8");
         }
-    }
-
-    if (preg_match('/i\.(\d+)\.(\d+)/', $clean_url, $matches)) {
-        $clean_url = "https://shopee.vn/opaanlp/{$matches[1]}/{$matches[2]}";
-    } elseif (preg_match('/\/(\d+)\/(\d+)/', $clean_url, $matches)) {
-        $clean_url = "https://shopee.vn/opaanlp/{$matches[1]}/{$matches[2]}";
     }
 
     $aff_id = $shopee_aff_id ?: '17374450024'; 
@@ -117,6 +171,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
     echo json_encode([
         'success' => true,
         'product_name' => $product_name,
+        'image' => $api_image,
         'clean_url' => $clean_url,
         'aff_link' => $final_aff_link,
         'affiliate_id' => $aff_id
@@ -431,6 +486,44 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
         /* Hide mobile header stuff if we share the layout */
         .mobile-header { display: none; }
         @media (max-width: 768px) { .mobile-header { display: flex; } }
+
+        /* Nút MUA đặc biệt */
+        .btn-buy-now {
+            background: linear-gradient(135deg, #ff734d, #ee4d2d);
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(238, 77, 45, 0.2);
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .btn-buy-now:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(238, 77, 45, 0.4);
+            filter: brightness(1.1);
+        }
+        
+        #product-info {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .product-img-box {
+            position: relative;
+            background: #eee;
+            border: 1px solid var(--border-color);
+        }
+        
+        html[data-theme="dark"] .product-img-box {
+            background: #2d3748;
+        }
     </style>
 </head>
 <body>
@@ -531,16 +624,21 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
 
                         <!-- Kết quả -->
                         <div id="result-section">
-                            <div id="product-info" class="card" style="display: none; padding: 12px; margin-bottom: 15px;">
+                            <div id="product-info" class="card" style="display: none; padding: 15px; margin-bottom: 15px; border-left: 4px solid #ee4d2d;">
                                 <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div id="product-img-box" style="width: 64px; height: 64px; background: rgba(0,0,0,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #ccc; font-size: 1.5rem; flex-shrink: 0; overflow: hidden;">
+                                    <div id="product-img-box" class="product-img-box" style="width: 70px; height: 70px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #ccc; font-size: 1.5rem; flex-shrink: 0; overflow: hidden;">
                                         <span id="img-placeholder">SP</span>
                                         <img id="product-actual-img" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
                                     </div>
                                     <div style="flex: 1; text-align: left;">
-                                        <div id="product-name-text" style="font-weight: 700; color: var(--text-main); font-size: 1.05rem; margin-bottom: 4px; line-height: 1.3;">Sản phẩm Shopee</div>
-                                        <div style="display: inline-flex; align-items: center; gap: 5px; background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
-                                            <i class="fas fa-check-circle" style="font-size: 0.85rem;"></i> Đã chuyển đổi xong
+                                        <div id="product-name-text" style="font-weight: 700; color: var(--text-main); font-size: 1rem; margin-bottom: 8px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Sản phẩm Shopee</div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                            <div style="display: inline-flex; align-items: center; gap: 5px; background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                                                <i class="fas fa-check-circle"></i> Đã chuyển xong
+                                            </div>
+                                            <a href="#" id="buy-now-btn" target="_blank" class="btn-buy-now">
+                                                <i class="fas fa-shopping-cart"></i> MUA
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -657,6 +755,17 @@ if (isset($_GET['action']) && $_GET['action'] === 'convert' && isset($_POST['url
                 
                 document.getElementById('product-name-text').innerText = data.product_name || 'Sản phẩm Shopee';
                 
+                // Cập nhật nút MUA và ảnh
+                document.getElementById('buy-now-btn').href = data.aff_link;
+                if (data.image) {
+                    document.getElementById('product-actual-img').src = data.image;
+                    document.getElementById('product-actual-img').style.display = 'block';
+                    document.getElementById('img-placeholder').style.display = 'none';
+                } else {
+                    document.getElementById('product-actual-img').style.display = 'none';
+                    document.getElementById('img-placeholder').style.display = 'block';
+                }
+
                 document.getElementById('product-info').style.display = 'block';
                 document.getElementById('result-section').style.display = 'block';
                 document.getElementById('instruction-section').style.display = 'block';
