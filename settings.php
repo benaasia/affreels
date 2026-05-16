@@ -233,7 +233,7 @@ if (!empty($current_key)) {
                                    title="<?php echo htmlspecialchars($api_status['message']); ?>"></i>
                             <?php endif; ?>
                         </div>
-                        <button type="submit" class="btn-submit btn-submit-mobile" style="width: auto; padding: 0 25px; margin: 0; box-shadow: none; white-space: nowrap;">
+                        <button type="submit" class="btn-submit btn-submit-mobile" style="width: auto; padding: 12px 25px; margin-top: 10px; box-shadow: none; white-space: nowrap;">
                             <i class="fas fa-save"></i> Lưu
                         </button>
                     </div>
@@ -263,17 +263,17 @@ if (!empty($current_key)) {
                             // Loại bỏ /v1 và đảm bảo URL sạch
                             $buy_base_clean = str_replace('/v1', '', rtrim($master_url, '/')); 
                         ?>
-                        <div><i class="fas fa-shopping-cart" style="color: #0088cc;"></i> Chưa có Key? <a href="<?php echo $buy_base_clean; ?>/buy_plan" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Mua API Pro mới tại đây</a></div>
+                        <div><i class="fas fa-gift" style="color: #fbbf24;"></i> <a href="<?php echo $buy_base_clean; ?>/get_free_key" target="_blank" style="color: #fbbf24; font-weight: 700; text-decoration: none;">Lấy API Key miễn phí</a> hoặc <i class="fas fa-shopping-cart" style="color: #0088cc;"></i> <a href="<?php echo $buy_base_clean; ?>/buy_plan" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">Mua API Pro</a></div>
                         <?php 
                             $buy_url = $buy_base_clean . "/buy_plan?api_key=" . urlencode($current_key);
                         ?>
-                        <div style="margin-top: 5px;"><i class="fas fa-shopping-cart" style="color: #10b981;"></i> Muốn nâng cấp / gia hạn? <a href="<?php echo $buy_url; ?>" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: underline;">Xem các gói cước PRO tại đây</a></div>
+                        <div style="margin-top: 5px;"><i class="fas fa-gift" style="color: #10b981;"></i> <a href="<?php echo $buy_url; ?>" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: none;">Xem các gói cước PRO tại đây</a></div>
                     </small>
                 </div>
             </form>
 
             <div class="donate-section">
-                <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim); line-height: 1.5;">☕ Chúng tôi cung cấp công cụ này hoàn toàn miễn phí,<br>hãy mời tác giả một ly cà phê để duy trì hệ thống nhé!</div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim); line-height: 1.5;">☕ Chúng tôi cung cấp công cụ này hoàn toàn miễn phí, hãy mời tác giả một ly cà phê để duy trì hệ thống nhé!</div>
                 <?php 
                 $qr_display_url = $qr_url;
                 $qr_display_url .= (strpos($qr_display_url, '?') !== false ? '&' : '?') . 'v=' . time();
