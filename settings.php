@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// Bảo mật: Chỉ admin mới có quyền truy cập trang cài đặt
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header('Location: admin.php');
+    exit;
+}
+
 define('DB_FILE', 'links.db');
 require_once 'remote_api_helper.php';
 
