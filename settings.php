@@ -257,8 +257,17 @@ if (!empty($current_key)) {
                         </div>
                     <?php endif; ?>
 
-                    <small style="display: block; margin-top: 12px; font-size: 0.8rem;">
-                        <i class="fab fa-telegram" style="color: #0088cc;"></i> Chưa có Key? <a href="https://t.me/shortlinkone" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Lấy API miễn phí tại đây</a>
+                    <small style="display: block; margin-top: 15px; font-size: 0.8rem; line-height: 1.6; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <?php 
+                            $master_url = getRemoteAPIUrl();
+                            // Loại bỏ /v1 và đảm bảo URL sạch
+                            $buy_base_clean = str_replace('/v1', '', rtrim($master_url, '/')); 
+                        ?>
+                        <div><i class="fas fa-shopping-cart" style="color: #0088cc;"></i> Chưa có Key? <a href="<?php echo $buy_base_clean; ?>/buy_plan" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Mua API Pro mới tại đây</a></div>
+                        <?php 
+                            $buy_url = $buy_base_clean . "/buy_plan?api_key=" . urlencode($current_key);
+                        ?>
+                        <div style="margin-top: 5px;"><i class="fas fa-shopping-cart" style="color: #10b981;"></i> Muốn nâng cấp / gia hạn? <a href="<?php echo $buy_url; ?>" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: underline;">Xem các gói cước PRO tại đây</a></div>
                     </small>
                 </div>
             </form>
