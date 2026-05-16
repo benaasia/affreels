@@ -138,3 +138,10 @@ function smartCheckAPIStatus() {
     
     return $res;
 }
+function getRemoteAPIUrl() {
+    global $remote_api_url;
+    if (empty($remote_api_url)) {
+        return 'https://api.affreel.com/v1';
+    }
+    return $remote_api_url;
+}
