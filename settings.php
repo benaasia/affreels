@@ -230,7 +230,7 @@ if (!empty($current_key)) {
             <form method="POST">
                 <div class="form-group">
                     <label for="remote_api_key">API Key (Được cấp bởi AffReel)</label>
-                    <div style="display: flex; gap: 8px;" class="input-group-mobile">
+                    <div style="display: flex; gap: 8px; align-items: center;" class="input-group-mobile">
                         <div style="position: relative; flex: 1;">
                             <input type="text" id="remote_api_key" name="remote_api_key" class="form-control" value="<?php echo htmlspecialchars($current_key); ?>" placeholder="Dán API Key của bạn vào đây..." style="width: 100%; padding-right: 45px;">
                             <?php if ($api_status): ?>
@@ -239,7 +239,7 @@ if (!empty($current_key)) {
                                    title="<?php echo htmlspecialchars($api_status['message']); ?>"></i>
                             <?php endif; ?>
                         </div>
-                        <button type="submit" class="btn-submit btn-submit-mobile" style="width: auto; padding: 12px 25px; margin-top: 10px; box-shadow: none; white-space: nowrap;">
+                        <button type="submit" class="btn-submit btn-submit-mobile" style="width: auto; padding: 12px 25px; margin-top: 0; box-shadow: none; white-space: nowrap; height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <i class="fas fa-save"></i> Lưu
                         </button>
                     </div>
