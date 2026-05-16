@@ -1725,7 +1725,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                             </div>
                             <p>${data.message}</p>
                             <div class="admin-banner-actions">
-                                <a href="admin.php?tab=settings" class="admin-banner-btn">Cấu hình API Key</a>
+                                <a href="/settings.php" class="admin-banner-btn">Cấu hình API Key</a>
                             </div>
                         </div>
                     </div>
