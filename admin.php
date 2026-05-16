@@ -46,7 +46,10 @@ $remote_api_key = trim(getSetting($db, 'remote_api_key', 'FREE-85C45DDDBF3CEADB'
 $remote_api_url = trim(getSetting($db, 'remote_api_url', 'https://api.affreel.com/v1'));
 $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
-if (empty($remote_api_key) && !$is_ajax && !isset($_POST['save_branding']) && !isset($_POST['remote_api_key'])) {
+$is_logged_in = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+
+// Chỉ redirect sang settings.php nếu ĐÃ ĐĂNG NHẬP và thiếu API Key
+if ($is_logged_in && empty($remote_api_key) && !$is_ajax && !isset($_POST['save_branding']) && !isset($_POST['remote_api_key'])) {
     if (basename($_SERVER['PHP_SELF']) !== 'settings.php') {
         header('Location: settings.php');
         exit;
@@ -75,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_password'])
         $login_error = 'Mật khẩu không chính xác.';
     }
 }
-
+// Cập nhật lại trạng thái sau khi POST login
 $is_logged_in = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 
 // Lấy cấu hình cơ bản (Dùng chung cho cả trang Login và Dashboard)
