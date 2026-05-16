@@ -1652,30 +1652,70 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
     
     // Kiểm tra trạng thái API bất đồng bộ
     <?php if ($tab === 'dashboard'): ?>
-    fetch('../ajax_check_api.php')
+    fetch('ajax_check_api.php')
         .then(r => r.json())
         .then(data => {
-            if (data && data.success === false) {
-                const container = document.getElementById('api-status-async');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="admin-banner-card admin-banner-warning mini" style="animation: slideDown 0.4s ease-out;">
-                            <div class="admin-banner-content">
-                                <div class="admin-banner-header">
-                                    <div class="admin-banner-title-group">
-                                        <div class="admin-banner-icon">⚠️</div>
-                                        <h4>Hệ thống API</h4>
+            const container = document.getElementById('api-status-async');
+            if (!container) return;
+
+            if (data && data.success) {
+                const info = data.data;
+                const limit = parseInt(info.request_limit) || 0;
+                const count = parseInt(info.request_count) || 0;
+                let percent = 0;
+                let usageText = count.toLocaleString();
+                
+                if (limit > 0) {
+                    percent = Math.min(100, Math.round((count / limit) * 100));
+                    usageText = `${count.toLocaleString()} / ${limit.toLocaleString()}`;
+                } else {
+                    usageText = `${count.toLocaleString()} (Không giới hạn)`;
+                }
+
+                container.innerHTML = `
+                    <div class="admin-banner-card mini" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.05); animation: slideDown 0.4s ease-out; margin-bottom: 25px;">
+                        <div class="admin-banner-content" style="padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="background: linear-gradient(135deg, var(--primary), #ff7e5f); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">💎</div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem; color: #fff;">${info.plan_name || 'Gói Pro'}</h4>
+                                        <span style="font-size: 0.8rem; color: var(--text-dim);">Trạng thái: <b style="color: #10b981;">Đang hoạt động</b></span>
                                     </div>
                                 </div>
-                                <p>${data.message}</p>
-                                <div class="admin-banner-actions">
-                                    <a href="settings.php" class="admin-banner-btn">Gia hạn / Đổi Key</a>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px;">HẾT HẠN</div>
+                                    <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">${info.expiry_date}</div>
                                 </div>
                             </div>
+                            
+                            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.85rem;">
+                                <span style="color: var(--text-dim);">Lượt dùng đã sử dụng</span>
+                                <span style="font-weight: 700; color: var(--primary);">${usageText}</span>
+                            </div>
+                            <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
+                                <div style="width: ${percent}%; height: 100%; background: linear-gradient(90deg, var(--primary), #ff7e5f); transition: width 1s ease-in-out;"></div>
+                            </div>
                         </div>
-                        <style> @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } } </style>
-                    `;
-                }
+                    </div>
+                `;
+            } else if (data && data.success === false) {
+                container.innerHTML = `
+                    <div class="admin-banner-card admin-banner-warning mini" style="animation: slideDown 0.4s ease-out; margin-bottom: 25px;">
+                        <div class="admin-banner-content">
+                            <div class="admin-banner-header">
+                                <div class="admin-banner-title-group">
+                                    <div class="admin-banner-icon">⚠️</div>
+                                    <h4>Hệ thống API</h4>
+                                </div>
+                            </div>
+                            <p>${data.message}</p>
+                            <div class="admin-banner-actions">
+                                <a href="admin.php?tab=settings" class="admin-banner-btn">Cấu hình API Key</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
         }).catch(err => console.log('API Check failed', err));
     <?php endif; ?>
