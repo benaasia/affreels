@@ -1673,27 +1673,23 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                 }
 
                 container.innerHTML = `
-                    <div class="admin-banner-card mini" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.05); animation: slideDown 0.4s ease-out; margin-bottom: 25px;">
-                        <div class="admin-banner-content" style="padding: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div style="background: linear-gradient(135deg, var(--primary), #ff7e5f); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">💎</div>
+                    <div class="admin-banner-card mini" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.05); animation: slideDown 0.4s ease-out; margin-bottom: 20px;">
+                        <div class="admin-banner-content" style="padding: 12px 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="background: linear-gradient(135deg, var(--primary), #ff7e5f); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">💎</div>
                                     <div>
-                                        <h4 style="margin: 0; font-size: 1rem; color: #fff;">${info.plan_name || 'Gói Pro'}</h4>
-                                        <span style="font-size: 0.8rem; color: var(--text-dim);">Trạng thái: <b style="color: #10b981;">Đang hoạt động</b></span>
+                                        <h4 style="margin: 0; font-size: 0.95rem; color: #fff; line-height: 1.2;">${info.plan_name || 'Gói Pro'} <span style="font-size: 0.75rem; color: #10b981; font-weight: normal; margin-left: 5px;">● Hoạt động</span></h4>
+                                        <div style="font-size: 0.75rem; color: var(--text-dim);">Hạn: ${info.expiry_date}</div>
                                     </div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px;">HẾT HẠN</div>
-                                    <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">${info.expiry_date}</div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">${usageText}</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;">Lượt dùng</div>
                                 </div>
                             </div>
                             
-                            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.85rem;">
-                                <span style="color: var(--text-dim);">Lượt dùng đã sử dụng</span>
-                                <span style="font-weight: 700; color: var(--primary);">${usageText}</span>
-                            </div>
-                            <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
+                            <div style="height: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden;">
                                 <div style="width: ${percent}%; height: 100%; background: linear-gradient(90deg, var(--primary), #ff7e5f); transition: width 1s ease-in-out;"></div>
                             </div>
                         </div>
