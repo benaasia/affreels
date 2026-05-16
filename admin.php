@@ -1674,8 +1674,11 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                     usageText = `${count.toLocaleString()} (Không giới hạn)`;
                 }
 
+                const masterUrl = '<?php echo $remote_api_url; ?>';
+                const buyBase = masterUrl.replace('/v1', '').replace(/\/$/, '');
                 const isFree = (info.plan_name || '').toLowerCase() === 'free';
                 const btnText = isFree ? '🛒 Mua API' : '🚀 Gia hạn API';
+                const buyUrl = isFree ? `${buyBase}/buy_plan` : `${buyBase}/buy_plan?api_key=<?php echo urlencode($remote_api_key); ?>`;
 
                 container.innerHTML = `
                     <div class="admin-banner-card mini" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.05); animation: slideDown 0.4s ease-out; margin-bottom: 20px;">
@@ -1689,8 +1692,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                                     </div>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
-                                    <a href="/settings.php" class="admin-banner-btn" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; text-decoration: none; border-radius: 6px;">⚙️ Cài đặt</a>
-                                    <a href="https://api.affreel.com/buy_plan?api_key=<?php echo $remote_api_key; ?>" target="_blank" class="admin-banner-btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">${btnText}</a>
+                                    <a href="settings.php" class="admin-banner-btn" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; text-decoration: none; border-radius: 6px;">⚙️ Cài đặt</a>
+                                    <a href="${buyUrl}" target="_blank" class="admin-banner-btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">${btnText}</a>
                                 </div>
                             </div>
                             
