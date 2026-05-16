@@ -120,7 +120,7 @@ function smartVerifyKey($force_key = null) {
 }
 
 function smartCheckAPIStatus() {
-    $res = callRemoteAPI('check');
+    $res = callRemoteAPI('check_status');
     
     // Nếu thành công và có link QR từ main site, cập nhật lại vào settings cục bộ
     if (isset($res['success']) && $res['success'] && !empty($res['donate_qr_url'])) {
