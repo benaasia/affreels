@@ -1674,8 +1674,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                     usageText = `${count.toLocaleString()} (Không giới hạn)`;
                 }
 
-                const masterUrl = '<?php echo $remote_api_url; ?>';
-                const buyBase = masterUrl.replace('/v1', '').replace(/\/$/, '');
+                const masterUrl = '<?php echo rtrim($remote_api_url, "/"); ?>';
+                const buyBase = masterUrl.replace(/\/v1$/, '').replace(/\/api$/, '').replace('app.affreel.com', 'api.affreel.com');
                 const isFree = (info.plan_name || '').toLowerCase() === 'free';
                 const btnText = isFree ? '🛒 Mua API' : '🚀 Gia hạn API';
                 const buyUrl = isFree ? `${buyBase}/buy_plan` : `${buyBase}/buy_plan?api_key=<?php echo urlencode($remote_api_key); ?>`;
