@@ -1662,16 +1662,19 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
 
             if (data && data.success) {
                 const info = data.data;
-                const limit = parseInt(info.request_limit) || 0;
+                const limitVal = info.request_limit;
                 const count = parseInt(info.request_count) || 0;
+                let usageText = "";
                 let percent = 0;
-                let usageText = count.toLocaleString();
-                
-                if (limit > 0) {
+
+                if (limitVal && limitVal !== 'Không giới hạn') {
+                    const limit = parseInt(limitVal) || 0;
+                    const remaining = Math.max(0, limit - count);
                     percent = Math.min(100, Math.round((count / limit) * 100));
-                    usageText = `${count.toLocaleString()} / ${limit.toLocaleString()}`;
+                    usageText = `Còn lại: ${remaining.toLocaleString()} lượt`;
                 } else {
-                    usageText = `${count.toLocaleString()} (Không giới hạn)`;
+                    usageText = `Đã dùng: ${count.toLocaleString()} (Vô hạn)`;
+                    percent = 0;
                 }
 
                 const masterUrl = '<?php echo rtrim($remote_api_url, "/"); ?>';
