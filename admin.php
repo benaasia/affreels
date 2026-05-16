@@ -993,6 +993,8 @@ function buildQuery($overrides = []) {
         <h2 class="admin-page-title">⚙️ Thông tin hệ thống</h2>
     </div>
 
+    <div id="api-status-async"></div>
+
     <div class="admin-settings-card">
         <div class="admin-settings-card-header">
             <h3>📋 Thông số máy chủ</h3>
@@ -1651,7 +1653,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
     checkUpdates();
     
     // Kiểm tra trạng thái API bất đồng bộ
-    <?php if ($tab === 'dashboard'): ?>
+    <?php if ($tab === 'dashboard' || $tab === 'system'): ?>
     fetch('ajax_check_api.php')
         .then(r => r.json())
         .then(data => {
