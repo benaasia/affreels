@@ -1687,9 +1687,47 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                 const buyUrl = isFree ? `${buyBase}/buy_plan` : `${buyBase}/buy_plan?api_key=<?php echo urlencode($remote_api_key); ?>`;
 
                 container.innerHTML = `
+                    <style>
+                        .admin-banner-row {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 12px;
+                            gap: 15px;
+                        }
+                        .admin-banner-actions-col {
+                            display: flex;
+                            gap: 8px;
+                            flex-shrink: 0;
+                        }
+                        @media (max-width: 768px) {
+                            .admin-banner-row {
+                                flex-direction: column;
+                                align-items: flex-start !important;
+                                gap: 12px;
+                            }
+                            .admin-banner-actions-col {
+                                width: 100% !important;
+                                display: flex !important;
+                                flex-direction: row !important;
+                                gap: 6px !important;
+                                justify-content: space-between !important;
+                            }
+                            .admin-banner-actions-col a {
+                                flex: 1 !important;
+                                width: auto !important;
+                                display: inline-flex !important;
+                                align-items: center !important;
+                                justify-content: center !important;
+                                padding: 6px 2px !important;
+                                font-size: 0.72rem !important;
+                                white-space: nowrap !important;
+                            }
+                        }
+                    </style>
                     <div class="admin-banner-card mini" style="background: var(--surface); border: 1px solid rgba(255,255,255,0.05); animation: slideDown 0.4s ease-out; margin-bottom: 20px;">
                         <div class="admin-banner-content" style="padding: 12px 16px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div class="admin-banner-row">
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <div style="background: linear-gradient(135deg, var(--primary), #ff7e5f); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem;">💎</div>
                                     <div>
@@ -1697,9 +1735,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
                                         <div style="font-size: 0.75rem; color: var(--text-dim);">Hạn: ${info.expiry_date}</div>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 8px;">
+                                <div class="admin-banner-actions-col">
                                     <a href="settings.php" class="admin-banner-btn" style="padding: 4px 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; text-decoration: none; border-radius: 6px;">⚙️ Cài đặt</a>
                                     <a href="${buyUrl}" target="_blank" class="admin-banner-btn" style="padding: 4px 10px; font-size: 0.75rem; background: var(--primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">${btnText}</a>
+                                    <a href="https://t.me/affreel" target="_blank" class="admin-banner-btn" style="padding: 4px 10px; font-size: 0.75rem; background: #22c55e; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">📞 Liên hệ</a>
                                 </div>
                             </div>
                             
