@@ -586,8 +586,21 @@ $shopee_post_url = $shopee_post_url ?? '#';
                 </a>
             </nav>
 
-            <div class="sidebar-footer">
-                <button class="theme-toggle-inline theme-toggle-btn" title="Đổi màu">
+            <div class="sidebar-footer" style="display: flex; align-items: center; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <?php
+                $client_version = '2.2.9'; // Phiên bản mặc định dự phòng
+                if (file_exists('version.json')) {
+                    $version_data = json_decode(file_get_contents('version.json'), true);
+                    if (isset($version_data['version'])) {
+                        $client_version = $version_data['version']; // Đọc phiên bản động từ tệp tin version.json
+                    }
+                }
+                ?>
+                <!-- Hiển thị phiên bản ở góc trái -->
+                <span class="version-text" style="font-size: 0.75rem; color: var(--text-dim); font-weight: 600; opacity: 0.6; letter-spacing: 0.5px;">v<?php echo htmlspecialchars($client_version); ?></span>
+                
+                <!-- Nút đổi màu được chuyển thành nút tròn mini ở góc phải -->
+                <button class="theme-toggle-inline theme-toggle-btn" title="Đổi màu" style="width: 36px; height: 36px; min-width: 36px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0;">
                     <span class="theme-icon">🌙</span>
                 </button>
             </div>
