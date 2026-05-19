@@ -269,11 +269,11 @@ if (!empty($current_key)) {
                             // Loại bỏ /v1 và đảm bảo URL sạch
                             $buy_base_clean = str_replace('/v1', '', rtrim($master_url, '/')); 
                         ?>
-                        <div><i class="fas fa-gift" style="color: #fbbf24;"></i> <a href="<?php echo $buy_base_clean; ?>/get_free_key" target="_blank" style="color: #fbbf24; font-weight: 700; text-decoration: none;">Lấy API Key miễn phí</a> hoặc <i class="fas fa-shopping-cart" style="color: #0088cc;"></i> <a href="<?php echo $buy_base_clean; ?>/buy_plan" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">Mua API Pro</a></div>
+                        <div><i class="fas fa-gift" style="color: #fbbf24;"></i> <a href="<?php echo $buy_base_clean; ?>/get_free_key" target="_blank" style="color: #fbbf24; font-weight: 700; text-decoration: none;">Lấy API Key miễn phí</a></div>
                         <?php 
                             $buy_url = $buy_base_clean . "/buy_plan?api_key=" . urlencode($current_key);
                         ?>
-                        <div style="margin-top: 5px;"><i class="fas fa-gift" style="color: #10b981;"></i> <a href="<?php echo $buy_url; ?>" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: none;">Xem các gói cước PRO tại đây</a></div>
+                        <div style="margin-top: 5px;"><i class="fas fa-sync-alt" style="color: #10b981;"></i> <a href="<?php echo $buy_url; ?>" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: none;">Gia hạn </a> hoặc <i class="fas fa-shopping-cart" style="color: #0088cc;"></i> <a href="<?php echo $buy_base_clean; ?>/buy_plan" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">Mua API mới</a></div>
                     </small>
                 </div>
             </form>
