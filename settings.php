@@ -78,16 +78,16 @@ if (!empty($current_key)) {
     <style>
         .container {
             max-width: 500px;
-            margin: 60px auto;
+            margin: 40px auto;
             padding: 20px;
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 10px;
         }
         .hero {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 0;
         }
         .settings-card {
             background: var(--card-bg);
@@ -212,7 +212,7 @@ if (!empty($current_key)) {
         <div class="hero">
             <h1 style="display: flex; align-items: center; justify-content: center; gap: 12px;">
                 <a href="index.php" style="text-decoration: none; display: flex; align-items: center; gap: 12px; color: var(--primary);">
-                    <img src="image/logo.png" alt="Logo" style="height: 48px; border-radius: 5%;">
+                    <img src="image/logo.png" alt="Logo" style="height: 48px; border-radius: 12px; background: #ffffff; padding: 6px 16px; box-shadow: 0 4px 12px rgba(255,255,255,0.1); object-fit: contain;">
                 </a>
             </h1>
             <!--
@@ -289,8 +289,8 @@ if (!empty($current_key)) {
             </div>
             
             <div style="margin-top: 2rem; text-align: center;">
-                <a href="index.php" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
-                    <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+                <a href="admin.php" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                    <i class="fas fa-arrow-left"></i> Quay lại trang Admin
                 </a>
             </div>
         </div>
