@@ -543,10 +543,9 @@ function buildQuery($overrides = []) {
     <div class="admin-login-card">
         <div class="admin-login-icon">🔐</div>
         <div class="admin-logo" style="text-align: center; margin-bottom: 1rem;">
-            <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo" style="height: 40px; display: block; margin: 0 auto 10px;">
-            <span style="font-weight: 700; font-size: 1.2rem;"><?php echo htmlspecialchars($site_title); ?>--> <span style="font-weight: 300;">Admin</span></span>
+            <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="Logo" style="height: 62px; display: block; margin: 0 auto 15px; background: #ffffff; padding: 6px 16px; border-radius: 10px; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.08);">
         </div>
-        <p class="admin-login-subtitle">Admin Control Panel</p>
+        <p class="admin-login-subtitle">Admin Control Panel <span style="font-size: 0.8rem; font-weight: normal; opacity: 0.7; margin-left: 5px;">v<?php echo htmlspecialchars($current_version); ?></span></p>
         <?php if ($login_error): ?>
             <div class="admin-alert admin-alert-error"><?php echo htmlspecialchars($login_error); ?></div>
         <?php endif; ?>
