@@ -1,6 +1,7 @@
 # AffReels Pro
 
 Hệ thống hỗ trợ chuyển đổi link Shopee thường thành link Affiliate một cách tự động và chuyên nghiệp. Giải pháp tối ưu dành cho cộng tác viên Shopee giúp tối đa hóa thu nhập từ việc chia sẻ link trên Facebook Reels, TikTok và website cá nhân thông qua cơ chế API thông minh.
+Xem tại https://shopes.cc
 
 ## 🌟 Tính năng nổi bật
 - **Trích xuất link tự động:** Hỗ trợ link Shopee, Reels, Bookmarklet.
