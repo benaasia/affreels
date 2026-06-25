@@ -1,7 +1,7 @@
 # https://shopes.cc
 
 Hệ thống hỗ trợ chuyển đổi link Shopee thường thành link Affiliate một cách tự động và chuyên nghiệp. Giải pháp tối ưu dành cho cộng tác viên Shopee giúp tối đa hóa thu nhập từ việc chia sẻ link trên Facebook Reels, TikTok và website cá nhân thông qua cơ chế API thông minh.
-Hoặc bạn có thể tạo link với aff id riêng tại https://shopes.cc
+Hoặc bạn có thể tạo link với aff id riêng tại [https://shopes.cc/register.php](https://shopes.cc/register.php)
 
 ## 🌟 Tính năng nổi bật
 - **Trích xuất link tự động:** Hỗ trợ link Shopee, Reels, Bookmarklet.
