@@ -69,11 +69,18 @@ function callRemoteAPI($endpoint, $data = []) {
     return $result;
 }
 
-function smartExtractShopeeLink($input, $is_html = false, $source_url = '') {
+function smartExtractShopeeLink($input, $is_html = false, $source_url = '', $no_meta = false) {
     return callRemoteAPI('extract', [
         'input' => $input,
         'is_html' => $is_html ? 1 : 0,
-        'source_url' => $source_url
+        'source_url' => $source_url,
+        'no_meta' => $no_meta ? 1 : 0
+    ]);
+}
+
+function smartGetMetadata($url) {
+    return callRemoteAPI('get_metadata', [
+        'url' => $url
     ]);
 }
 

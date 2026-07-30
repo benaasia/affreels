@@ -2832,3 +2832,187 @@ body.dark-mode .result-card {
         border-radius: 8px;
     }
 }
+
+/* Voucher Disclaimer Notice */
+.voucher-disclaimer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-left: 4px solid #f59e0b;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+    font-size: 0.78rem;
+    color: #d97706;
+    line-height: 1.5;
+}
+.voucher-disclaimer i {
+    color: #f59e0b;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Voucher Cards (Instagram, Facebook, YouTube) */
+.voucher-card {
+    display: flex;
+    background: var(--bg-card, #ffffff);
+    border-radius: 14px;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    min-height: 110px;
+}
+.voucher-left {
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    position: relative;
+    border-right: 1px dashed rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+    color: #ffffff;
+}
+.voucher-left i {
+    font-size: 2.2rem;
+    margin-bottom: 5px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+.voucher-left .brand-name {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.voucher-body-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.voucher-content-columns {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+}
+.voucher-main {
+    flex: 1;
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+.v-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-main, #0f172a);
+    margin-bottom: 4px;
+}
+.v-tag {
+    display: inline-block;
+    border: 1px solid #ee4d2d;
+    color: #ee4d2d;
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    width: fit-content;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+.v-footer {
+    font-size: 0.68rem;
+    color: var(--text-dim, #64748b);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+.v-footer a {
+    color: var(--primary, #3b82f6);
+    text-decoration: none;
+    font-weight: 600;
+}
+.voucher-right {
+    width: 110px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border-left: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.02);
+}
+.v-btn {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 7px 0;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+.v-btn-buy {
+    background: #ee4d2d;
+    color: white;
+    box-shadow: 0 4px 10px rgba(238, 77, 45, 0.2);
+}
+.v-btn-buy:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+.v-btn-copy {
+    border: 1px solid #ee4d2d;
+    color: #ee4d2d;
+    background: transparent;
+}
+.v-btn-copy:hover {
+    background: rgba(238, 77, 45, 0.08);
+}
+.v-progress-container {
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+.v-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+.v-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 10px;
+}
+.v-progress-text {
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-top: 2px;
+}
+.v-badge-new {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}

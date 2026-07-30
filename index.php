@@ -89,6 +89,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'scrape' && isset($_GET['url']
     exit;
 }
 
+if (isset($_GET['action']) && $_GET['action'] === 'get_metadata' && (isset($_GET['url']) || isset($_POST['url']))) {
+    header('Content-Type: application/json');
+    $meta_url = isset($_POST['url']) ? trim($_POST['url']) : trim($_GET['url']);
+    $meta_res = smartGetMetadata($meta_url);
+    echo json_encode($meta_res);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     $received_key = isset($_POST['api_key']) ? $_POST['api_key'] : '';
     if (empty($received_key)) {
@@ -588,7 +596,7 @@ $shopee_post_url = $shopee_post_url ?? '#';
 
             <div class="sidebar-footer" style="display: flex; align-items: center; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
                 <?php
-                $client_version = '2.2.9'; // Phiên bản mặc định dự phòng
+                $client_version = '3.1.0'; // Phiên bản mặc định dự phòng
                 if (file_exists('version.json')) {
                     $version_data = json_decode(file_get_contents('version.json'), true);
                     if (isset($version_data['version'])) {
@@ -753,6 +761,101 @@ $shopee_post_url = $shopee_post_url ?? '#';
                                 <svg class="icon-check" style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Disclaimer & Voucher Blocks -->
+                    <div class="voucher-disclaimer" style="margin-top: 15px;">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Voucher gợi ý — <strong>có thể được</strong> áp dụng, không đảm bảo chắc chắn.</span>
+                    </div>
+
+                    <!-- Instagram Voucher Card -->
+                    <div class="voucher-card">
+                        <div class="voucher-left" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);">
+                            <i class="fab fa-instagram"></i>
+                            <span class="brand-name">INSTAGRAM</span>
+                        </div>
+                        <div class="voucher-body-wrap">
+                            <div class="v-title" style="padding: 8px 14px 0 14px;">Giảm 25% - Đơn tối thiểu 500k</div>
+                            <div class="voucher-content-columns">
+                                <div class="voucher-main">
+                                    <div class="v-tag" style="border-color: #e1306c; color: #e1306c;">Độc quyền Instagram</div>
+                                    <div class="v-progress-container">
+                                        <div class="v-progress-bar">
+                                            <div class="v-progress-fill" style="width: 88%; background: linear-gradient(90deg, #e1306c, #fce4ec);"></div>
+                                        </div>
+                                        <div class="v-progress-text" style="color: #e1306c;">
+                                            <i class="fas fa-fire"></i> Đã dùng 88% - Sắp hết
+                                        </div>
+                                    </div>
+                                    <div class="v-footer">Còn 2 ngày <a href="javascript:void(0)" onclick="document.getElementById('instruction-section').scrollIntoView({behavior: 'smooth', block: 'center'})">Hướng dẫn</a></div>
+                                </div>
+                                <div class="voucher-right">
+                                    <button class="v-btn v-btn-buy buy-btn" onclick="const u=document.getElementById('short-link-display').textContent; if(u) window.open(u, '_blank');" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);"><i class="fas fa-shopping-cart"></i> Mua ngay</button>
+                                    <div class="v-btn v-btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('short-link-display').textContent)" style="border-color: #e1306c; color: #e1306c;"><i class="fas fa-copy"></i> Sao chép</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="v-badge-new">Mới!</div>
+                    </div>
+
+                    <!-- Facebook Voucher Card -->
+                    <div class="voucher-card">
+                        <div class="voucher-left" style="background: #1877f2;">
+                            <i class="fab fa-facebook"></i>
+                            <span class="brand-name">FACEBOOK</span>
+                        </div>
+                        <div class="voucher-body-wrap">
+                            <div class="v-title" style="padding: 8px 14px 0 14px;">Giảm 22% - Đơn tối thiểu 200k</div>
+                            <div class="voucher-content-columns">
+                                <div class="voucher-main">
+                                    <div class="v-tag" style="border-color: #1877f2; color: #1877f2;">Độc quyền Facebook</div>
+                                    <div class="v-progress-container">
+                                        <div class="v-progress-bar">
+                                            <div class="v-progress-fill" style="width: 92%; background: linear-gradient(90deg, #1877f2, #e7f3ff);"></div>
+                                        </div>
+                                        <div class="v-progress-text" style="color: #1877f2;">
+                                            <i class="fas fa-bolt"></i> Đã dùng 92% - Có hạn
+                                        </div>
+                                    </div>
+                                    <div class="v-footer">Còn 1 ngày <a href="javascript:void(0)" onclick="document.getElementById('instruction-section').scrollIntoView({behavior: 'smooth', block: 'center'})">Hướng dẫn</a></div>
+                                </div>
+                                <div class="voucher-right">
+                                    <button class="v-btn v-btn-buy buy-btn" onclick="const u=document.getElementById('short-link-display').textContent; if(u) window.open(u, '_blank');" style="background: #1877f2;"><i class="fas fa-shopping-cart"></i> Mua ngay</button>
+                                    <div class="v-btn v-btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('short-link-display').textContent)" style="border-color: #1877f2; color: #1877f2;"><i class="fas fa-copy"></i> Sao chép</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- YouTube Voucher Card -->
+                    <div class="voucher-card">
+                        <div class="voucher-left" style="background: #FF0000;">
+                            <i class="fab fa-youtube"></i>
+                            <span class="brand-name">YOUTUBE</span>
+                        </div>
+                        <div class="voucher-body-wrap">
+                            <div class="v-title" style="padding: 8px 14px 0 14px;">Giảm 25% - Đơn tối thiểu 200k</div>
+                            <div class="voucher-content-columns">
+                                <div class="voucher-main">
+                                    <div class="v-tag" style="border-color: #FF0000; color: #FF0000;">Độc quyền YouTube</div>
+                                    <div class="v-progress-container">
+                                        <div class="v-progress-bar">
+                                            <div class="v-progress-fill" style="width: 79%; background: linear-gradient(90deg, #FF0000, #ffcdd2);"></div>
+                                        </div>
+                                        <div class="v-progress-text" style="color: #FF0000;">
+                                            <i class="fas fa-star"></i> Đã dùng 79% - Còn hạn
+                                        </div>
+                                    </div>
+                                    <div class="v-footer">Còn 2 ngày <a href="javascript:void(0)" onclick="document.getElementById('instruction-section').scrollIntoView({behavior: 'smooth', block: 'center'})">Hướng dẫn</a></div>
+                                </div>
+                                <div class="voucher-right">
+                                    <button class="v-btn v-btn-buy buy-btn" onclick="const u=document.getElementById('short-link-display').textContent; if(u) window.open(u, '_blank');" style="background: #FF0000;"><i class="fas fa-shopping-cart"></i> Mua ngay</button>
+                                    <div class="v-btn v-btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('short-link-display').textContent)" style="border-color: #FF0000; color: #FF0000;"><i class="fas fa-copy"></i> Sao chép</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="v-badge-new">Mới!</div>
                     </div>
                     
                     <div class="actions-row" id="actions-row" style="display: none;">

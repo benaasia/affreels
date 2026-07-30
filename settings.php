@@ -274,6 +274,7 @@ if (!empty($current_key)) {
                             $buy_url = $buy_base_clean . "/buy_plan?api_key=" . urlencode($current_key);
                         ?>
                         <div style="margin-top: 5px;"><i class="fas fa-sync-alt" style="color: #10b981;"></i> <a href="<?php echo $buy_url; ?>" target="_blank" style="color: #10b981; font-weight: 700; text-decoration: none;">Gia hạn </a> hoặc <i class="fas fa-shopping-cart" style="color: #0088cc;"></i> <a href="<?php echo $buy_base_clean; ?>/buy_plan" target="_blank" style="color: var(--primary); font-weight: 700; text-decoration: none;">Mua API mới</a></div>
+                        <div style="margin-top: 5px;"><i class="fas fa-code" style="color: #38bdf8;"></i> <a href="<?php echo $buy_base_clean; ?>/docs.php" target="_blank" style="color: #38bdf8; font-weight: 700; text-decoration: none;">API Developer (Tài liệu API)</a></div>
                     </small>
                 </div>
             </form>

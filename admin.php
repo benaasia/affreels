@@ -593,11 +593,15 @@ function buildQuery($overrides = []) {
             </a>
             <a href="admin.php?tab=notification" class="admin-nav-link <?php echo $tab==='notification'?'active':''; ?>">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                Thông báo
+                Popup
             </a>
             <a href="admin.php?tab=system" class="admin-nav-link <?php echo $tab==='system'?'active':''; ?>">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 Hệ thống
+            </a>
+            <a href="https://api.affreel.com/docs.php" target="_blank" class="admin-nav-link" style="color: #38bdf8;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                API Developer
             </a>
             <button class="admin-nav-link" onclick="openPasswordModal()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -609,7 +613,6 @@ function buildQuery($overrides = []) {
             </a>
             <a href="admin.php?logout=1" class="admin-nav-link admin-nav-logout">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                Đăng xuất
             </a>
             <div class="admin-nav-link version-display" onclick="manualCheckUpdate()" style="opacity: 0.6; cursor: pointer; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px; padding-top: 10px; transition: all 0.3s;" title="Nhấn để kiểm tra cập nhật">
                 <span id="version-dot" style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; margin-right: 6px; vertical-align: middle; box-shadow: 0 0 8px #10b981;"></span>
@@ -627,7 +630,7 @@ function buildQuery($overrides = []) {
 
     <div class="admin-settings-card">
         <div class="admin-settings-card-header">
-            <h3>📢 Cấu hình Thông báo (Beta Modal)</h3>
+            <h3>📢 Cấu hình Thông báo</h3>
         </div>
         <p class="admin-settings-desc">Cửa sổ này sẽ hiện ra một lần khi người dùng truy cập vào trang chủ.</p>
         
@@ -720,7 +723,7 @@ function buildQuery($overrides = []) {
                 <input type="text" id="shopee-aff-id" value="<?php echo htmlspecialchars(getSetting($db, 'shopee_aff_id', '')); ?>" placeholder="Ví dụ: 123456789" class="admin-settings-input">
                 <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">ID này sẽ được dùng để tự động gắn vào link khi bạn sử dụng trang <b>convert.php</b>.</small>
                 <div>
-                    <a href="https://s.shopee.vn/1BIwkrvTU5" target="_blank" style="font-size: 0.75rem; color: #10b981; text-decoration: underline; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                    <a href="https://1links.cc/lay-id-aff" target="_blank" style="font-size: 0.75rem; color: #10b981; text-decoration: underline; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
                         <i class="fas fa-external-link-alt"></i> Lấy Affiliate ID của bạn tại đây
                     </a>
                 </div>
