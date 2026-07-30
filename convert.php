@@ -27,7 +27,7 @@ try {
     $site_logo = isset($settings['site_logo']) ? $settings['site_logo'] : 'image/favicon.png';
     $site_favicon = isset($settings['site_favicon']) ? $settings['site_favicon'] : 'image/favicon.png';
     $shopee_aff_id = isset($settings['shopee_aff_id']) ? $settings['shopee_aff_id'] : '';
-    $shopee_post_url = isset($settings['shopee_post_url']) ? $settings['shopee_post_url'] : '#';
+    $shopee_post_url = !empty($settings['shopee_post_url']) ? $settings['shopee_post_url'] : 'https://1links.cc/link-fb-post';
 
 } catch (PDOException $e) {
     die("Database Error: " . $e->getMessage());

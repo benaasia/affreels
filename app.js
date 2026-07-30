@@ -509,6 +509,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (toggleBtn) toggleBtn.style.display = 'block';
                     const detailsSection = document.getElementById('link-details-section');
                     if (detailsSection) detailsSection.style.display = 'none';
+
+                    // Lấy metadata tên/ảnh sản phẩm
+                    fetch(`index.php?action=get_metadata&url=${encodeURIComponent(data.clean_link || data.link)}`)
+                        .then(r => r.json())
+                        .then(meta => {
+                            const nameEl = document.getElementById('product-name-text');
+                            const imgEl = document.getElementById('product-actual-img');
+                            const placeholderEl = document.getElementById('img-placeholder');
+                            if (meta && meta.title) {
+                                if (nameEl) nameEl.textContent = meta.title;
+                            }
+                            if (meta && meta.image) {
+                                if (imgEl) {
+                                    imgEl.src = meta.image;
+                                    imgEl.style.display = 'block';
+                                }
+                                if (placeholderEl) placeholderEl.style.display = 'none';
+                            }
+                        })
+                        .catch(e => console.log('Metadata error', e));
                 } else {
                     shopeeResultDetails.style.display = 'none';
                     const toggleBtn = document.getElementById('toggle-details-btn');

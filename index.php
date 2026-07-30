@@ -730,21 +730,30 @@ $shopee_post_url = $shopee_post_url ?? '#';
             <div class="result-section" id="result-section">
                 <div class="result-card">
                     <div id="shopee-result-details" style="display:none;">
-                        <div id="redir-link-section">
-                            <div class="result-label">Link mã Voucher độc quyền FB:</div>
-                            <div class="link-row" style="position: relative; display: block;">
-                                <div class="link-display" id="redir-link-display" style="font-size:0.7rem; color:#facc15; padding: 6px 10px 35px 10px;"></div>
-                                <div style="position: absolute; right: 6px; bottom: 6px; display: flex; gap: 6px;">
-                                    <button class="copy-icon-btn buy-btn" id="buy-redir-btn" title="Mở link mua hàng" style="width: auto; height: 26px; padding: 0 8px; font-size: 0.65rem; display: flex; align-items: center; gap: 3px; border-radius: 5px; background: rgba(238, 77, 45, 0.1); border-color: rgba(238, 77, 45, 0.2); color: #ee4d2d;">
-                                        <span>🛒 Mua hàng</span>
-                                    </button>
-                                    <button class="copy-icon-btn" id="copy-redir-btn" title="Sao chép link redirection" style="width: auto; height: 26px; padding: 0 8px; font-size: 0.65rem; display: flex; align-items: center; gap: 3px; border-radius: 5px;">
-                                        <span class="copy-text">Sao chép</span>
-                                        <svg class="icon-copy" style="width:10px; height:10px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                        <svg class="icon-check" style="width:10px; height:10px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
+                        <div id="product-info" class="card" style="padding: 15px; margin-bottom: 15px; border-left: 4px solid #ee4d2d; background: var(--card-bg); border-radius: 16px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div id="product-img-box" class="product-img-box" style="width: 70px; height: 70px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #ccc; font-size: 1.5rem; flex-shrink: 0; overflow: hidden; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+                                    <span id="img-placeholder">SP</span>
+                                    <img id="product-actual-img" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <div style="flex: 1; text-align: left;">
+                                    <div id="product-name-text" style="font-weight: 700; color: var(--text-main); font-size: 1rem; margin-bottom: 8px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Sản phẩm Shopee</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                        <div style="display: inline-flex; align-items: center; gap: 5px; background: rgba(46, 125, 50, 0.1); color: #2e7d32; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                                            <i class="fas fa-check-circle"></i> Đã tạo link
+                                        </div>
+                                        <div style="display: flex; gap: 6px; align-items: center;">
+                                            <button type="button" id="copy-redir-btn" class="action-btn btn-copy" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                                <i class="fas fa-copy"></i> Sao chép
+                                            </button>
+                                            <button type="button" id="buy-redir-btn" class="btn-buy-now" style="background: linear-gradient(135deg, #ee4d2d, #ff7337); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; font-size: 0.85rem; border: none; cursor: pointer; text-decoration: none;">
+                                                <i class="fas fa-shopping-cart"></i> MUA
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <div id="redir-link-display" style="display: none;"></div>
                         </div>
                     </div>
 

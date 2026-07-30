@@ -142,7 +142,11 @@ if ($is_logged_in && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $new = trim($_POST['new_password'] ?? '');
         $cfm = trim($_POST['confirm_password'] ?? '');
         $hash = getSetting($db, 'admin_password_hash', '');
-        if (!password_verify($cur, $hash)) { echo json_encode(['success'=>false,'message'=>'Mật khẩu hiện tại không đúng.']); exit; }
+        
+        // Nếu không phải mật khẩu mặc định mới cần xác minh mật khẩu hiện tại
+        if (!$is_default_password && !password_verify($cur, $hash)) {
+            echo json_encode(['success'=>false,'message'=>'Mật khẩu hiện tại không đúng.']); exit;
+        }
         if (strlen($new) < 6) { echo json_encode(['success'=>false,'message'=>'Mật khẩu mới tối thiểu 6 ký tự.']); exit; }
         if ($new !== $cfm) { echo json_encode(['success'=>false,'message'=>'Xác nhận mật khẩu không khớp.']); exit; }
         setSetting($db, 'admin_password_hash', password_hash($new, PASSWORD_BCRYPT));
@@ -738,8 +742,8 @@ function buildQuery($overrides = []) {
         <div class="admin-settings-row">
             <div class="admin-settings-label" style="color: #1877f2; font-weight: 700;">Bài viết Facebook</div>
             <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
-                <input type="text" id="shopee-post-url" value="<?php echo htmlspecialchars(getSetting($db, 'shopee_post_url', '')); ?>" placeholder="Dán link bài viết Facebook/TikTok tại đây" class="admin-settings-input">
-                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">Link này sẽ được gắn vào nút <b>Đến bài viết</b> và phần hướng dẫn trong <b>convert.php</b>.</small>
+                <input type="text" id="shopee-post-url" value="<?php echo htmlspecialchars(getSetting($db, 'shopee_post_url', '')); ?>" placeholder="điền link fb post" class="admin-settings-input">
+                <small style="color: var(--text-dim); font-size: 0.75rem; opacity: 0.8;">Link này sẽ được gắn vào nút <b>Đến bài viết</b> và phần hướng dẫn trong <b>convert.php</b>. Nếu để trống sẽ dùng mặc định: <code>https://1links.cc/link-fb-post</code>.</small>
             </div>
         </div>
         
@@ -1315,7 +1319,9 @@ function buildQuery($overrides = []) {
             <?php else: ?>
             <p style="font-size:0.8rem; color: var(--text-dim); margin-bottom: 1rem;">Mật khẩu được mã hóa bcrypt. Tối thiểu 6 ký tự.</p>
             <?php endif; ?>
+            <?php if (!$is_default_password): ?>
             <input type="password" id="pw-current" placeholder="Mật khẩu hiện tại" class="admin-modal-input" style="margin-bottom: 0.7rem;">
+            <?php endif; ?>
             <input type="password" id="pw-new" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" class="admin-modal-input" style="margin-bottom: 0.7rem;">
             <input type="password" id="pw-confirm" placeholder="Xác nhận mật khẩu mới" class="admin-modal-input">
         </div>
@@ -1332,14 +1338,18 @@ function buildQuery($overrides = []) {
 const BASE_URL = '<?php echo $display_base; ?>';
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { 
-    if (id === 'password-modal') {
+function closeModal(id, force = false) { 
+    if (id === 'password-modal' && !force) {
         const pModal = document.getElementById('password-modal');
         if (pModal && pModal.hasAttribute('data-force-change')) return;
     }
     document.getElementById(id).style.display = 'none'; 
 }
-function openPasswordModal() { openModal('password-modal'); document.getElementById('pw-current').focus(); }
+function openPasswordModal() { 
+    openModal('password-modal'); 
+    const curEl = document.getElementById('pw-current');
+    if (curEl) { curEl.focus(); } else { document.getElementById('pw-new').focus(); }
+}
 
 let currentUploadTarget = '';
 function triggerUpload(targetId) {
@@ -1473,20 +1483,27 @@ function saveCustomDomain() {
 }
 
 function changePassword() {
-    const cur = document.getElementById('pw-current').value;
+    const curEl = document.getElementById('pw-current');
+    const cur = curEl ? curEl.value : '';
     const np = document.getElementById('pw-new').value;
     const cf = document.getElementById('pw-confirm').value;
-    if (!cur || !np || !cf) return showToast('Vui lòng điền đầy đủ!', true);
+    if ((curEl && !cur) || !np || !cf) return showToast('Vui lòng điền đầy đủ!', true);
     const fd = new FormData();
     fd.append('change_password', '1');
-    fd.append('current_password', cur);
+    if (curEl) fd.append('current_password', cur);
     fd.append('new_password', np);
     fd.append('confirm_password', cf);
     fetch('admin.php', { method: 'POST', body: fd })
         .then(r => r.json())
         .then(data => {
             showToast(data.success ? '✅ ' + data.message : '❌ ' + data.message, !data.success);
-            if (data.success) { closeModal('password-modal'); document.getElementById('pw-current').value = ''; document.getElementById('pw-new').value = ''; document.getElementById('pw-confirm').value = ''; }
+            if (data.success) { 
+                closeModal('password-modal', true); 
+                setTimeout(() => { location.reload(); }, 600);
+            }
+        })
+        .catch(err => {
+            showToast('❌ Lỗi kết nối!', true);
         });
 }
 
