@@ -329,6 +329,97 @@ if (isset($_POST['action']) && $_POST['action'] === 'smart_update' && $is_logged
     exit;
 }
 
+// --- Server-side Update Checker ---
+if (isset($_POST['action']) && $_POST['action'] === 'check_server_update' && $is_logged_in) {
+    header('Content-Type: application/json');
+    
+    $raw_version_url = "https://raw.githubusercontent.com/benaasia/affreels/main/version.json?t=" . time();
+    $version = $current_version;
+    $changelog = 'Phát hiện thay đổi mã nguồn từ máy chủ.';
+    $has_update = false;
+
+    // 1. Thử kiểm tra qua raw.githubusercontent.com trước (không bị dính GitHub API 403 Rate Limit)
+    $vch = curl_init();
+    curl_setopt($vch, CURLOPT_URL, $raw_version_url);
+    curl_setopt($vch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($vch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($vch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($vch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($vch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($vch, CURLOPT_HTTPHEADER, ['User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)']);
+    $v_res = curl_exec($vch);
+    $v_http_code = curl_getinfo($vch, CURLINFO_HTTP_CODE);
+    curl_close($vch);
+
+    if ($v_res && $v_http_code === 200) {
+        $v_data = json_decode($v_res, true);
+        if (!empty($v_data['version'])) {
+            $remote_v = trim($v_data['version']);
+            $changelog = !empty($v_data['changelog']) ? $v_data['changelog'] : $changelog;
+            if (version_compare($remote_v, $current_version, '>')) {
+                $has_update = true;
+                $version = $remote_v;
+            }
+        }
+    }
+
+    // 2. Thử kiểm tra SHA chi tiết qua GitHub API REST
+    $repo_api_url = "https://api.github.com/repos/benaasia/affreels/contents?t=" . time();
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $repo_api_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Accept: application/vnd.github.v3+json'
+    ]);
+    
+    $remote_response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($http_code === 200 && $remote_response) {
+        $remote_files = json_decode($remote_response, true);
+        if (is_array($remote_files)) {
+            $skipped_files = ['links.db', '.htaccess', 'debug.log'];
+            $target_base_dir = __DIR__;
+            if (basename(__DIR__) === 'temp') {
+                $target_base_dir = dirname(__DIR__);
+            }
+
+            foreach ($remote_files as $file) {
+                if (($file['type'] ?? '') !== 'file') continue;
+                $filename = $file['name'];
+                if (in_array($filename, $skipped_files)) continue;
+
+                $local_path = $target_base_dir . DIRECTORY_SEPARATOR . $filename;
+                if (!file_exists($local_path)) {
+                    $has_update = true; break;
+                }
+
+                $local_content = file_get_contents($local_path);
+                $local_content = str_replace("\r\n", "\n", $local_content);
+                $local_sha = sha1("blob " . strlen($local_content) . "\0" . $local_content);
+                
+                if ($local_sha !== ($file['sha'] ?? '')) {
+                    $has_update = true; break;
+                }
+            }
+        }
+    }
+
+    echo json_encode([
+        'success' => true, 
+        'has_update' => $has_update,
+        'version' => $version,
+        'changelog' => $changelog
+    ]);
+    exit;
+}
+
 // --- SHA Comparison Checker ---
 if (isset($_POST['action']) && $_POST['action'] === 'check_sha_update' && $is_logged_in) {
     header('Content-Type: application/json');
@@ -1643,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('sidebarOverlay').classList.toggle('active');
     }
 
-    // Smart Update Checker for Client (Dựa trên nội dung file)
+    // Smart Update Checker for Client (Check qua Server PHP để tránh CORS và Rate Limit)
     async function checkUpdates(isManual = false) {
         const dot = document.getElementById('version-dot');
         if (isManual && dot) {
@@ -1651,47 +1742,28 @@ document.addEventListener('DOMContentLoaded', () => {
             dot.style.boxShadow = '0 0 8px #f59e0b';
         }
 
-        const currentVersion = "<?php echo $current_version; ?>";
-        const repoApiUrl = "https://api.github.com/repos/benaasia/affreels/contents/";
-        
+        if (isManual) showToast('⏳ Đang kiểm tra bản cập nhật...', false);
+
         try {
-            const res = await fetch(repoApiUrl + "?t=" + Date.now(), {
-                headers: { 'Accept': 'application/vnd.github.v3+json' }
-            });
-            const files = await res.json();
-            
-            if (!Array.isArray(files)) throw new Error("Invalid API response");
+            const fd = new FormData();
+            fd.append('action', 'check_server_update');
 
-            let hasUpdate = false;
-            let updateInfo = { version: currentVersion, changelog: 'Phát hiện thay đổi mã nguồn từ máy chủ.' };
+            const res = await fetch('admin.php', { method: 'POST', body: fd });
+            const data = await res.json();
 
-            // Thử lấy thông tin version.json trước (nếu có) để lấy changelog
-            const versionFile = files.find(f => f.name === 'version.json');
-            if (versionFile) {
-                try {
-                    const vRes = await fetch("https://raw.githubusercontent.com/benaasia/affreels/main/version.json?t=" + Date.now());
-                    const vData = await vRes.json();
-                    updateInfo.version = vData.version || currentVersion;
-                    updateInfo.changelog = vData.changelog || updateInfo.changelog;
-                } catch(e) {}
+            if (!data.success) {
+                throw new Error(data.message || 'Lỗi kiểm tra cập nhật');
             }
 
-            // Gửi request ngầm về server để so sánh SHA của từng file
-            const fd = new FormData();
-            fd.append('action', 'check_sha_update');
-            fd.append('remote_files', JSON.stringify(files.map(f => ({name: f.name, sha: f.sha, type: f.type}))));
-
-            const checkRes = await fetch('admin.php', { method: 'POST', body: fd });
-            const checkData = await checkRes.json();
-
-            if (checkData.success && checkData.has_update) {
+            if (data.has_update) {
                 const banner = document.getElementById('update-banner');
                 if (banner) {
-                    document.getElementById('new-version-tag').textContent = 'v' + updateInfo.version;
-                    document.getElementById('update-changelog').textContent = updateInfo.changelog;
+                    document.getElementById('new-version-tag').textContent = 'v' + (data.version || 'Mới');
+                    document.getElementById('update-changelog').textContent = data.changelog || 'Phát hiện thay đổi mã nguồn từ máy chủ.';
                     banner.style.display = 'block';
                     if (isManual) banner.scrollIntoView({ behavior: 'smooth' });
                 }
+                if (isManual) showToast('🚀 Phát hiện bản cập nhật mới!');
             } else if (isManual) {
                 showToast('✅ Hệ thống đã ở phiên bản mới nhất.');
             }
@@ -1702,7 +1774,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.log("Update check failed:", err);
-            if (isManual) showToast('❌ Không thể kết nối đến GitHub.', true);
+            if (isManual) showToast('❌ ' + (err.message || 'Không thể kết nối đến máy chủ cập nhật.'), true);
             if (dot) {
                 dot.style.background = '#ef4444';
                 dot.style.boxShadow = '0 0 8px #ef4444';
