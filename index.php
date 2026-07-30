@@ -596,7 +596,7 @@ $shopee_post_url = $shopee_post_url ?? '#';
 
             <div class="sidebar-footer" style="display: flex; align-items: center; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
                 <?php
-                $client_version = '3.1.1'; // Phiên bản mặc định dự phòng
+                $client_version = '3.1.2'; // Phiên bản mặc định dự phòng
                 if (file_exists('version.json')) {
                     $version_data = json_decode(file_get_contents('version.json'), true);
                     if (isset($version_data['version'])) {

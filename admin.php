@@ -14,6 +14,15 @@ try {
     $db = new PDO("sqlite:" . DB_FILE);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    $db->exec("CREATE TABLE IF NOT EXISTS links (
+        slug TEXT PRIMARY KEY,
+        url TEXT NOT NULL,
+        clicks INTEGER DEFAULT 0,
+        source_url TEXT DEFAULT '',
+        affiliate_id TEXT DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
     $columns = $db->query("PRAGMA table_info(links)")->fetchAll(PDO::FETCH_ASSOC);
     $col_names = array_column($columns, 'name');
     if (!in_array('clicks', $col_names))     $db->exec("ALTER TABLE links ADD COLUMN clicks INTEGER DEFAULT 0");
