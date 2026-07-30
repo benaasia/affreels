@@ -1299,21 +1299,31 @@ function buildQuery($overrides = []) {
     </div>
 </div>
 
-<div class="admin-modal-overlay" id="password-modal" style="display:none;">
+<div class="admin-modal-overlay" id="password-modal" style="display:none;" <?php if ($is_default_password): ?>data-force-change="1"<?php endif; ?>>
     <div class="admin-modal">
         <div class="admin-modal-header">
             <h3>🔑 Đổi mật khẩu Admin</h3>
+            <?php if (!$is_default_password): ?>
             <button class="admin-modal-close" onclick="closeModal('password-modal')">&times;</button>
+            <?php endif; ?>
         </div>
         <div class="admin-modal-body">
+            <?php if ($is_default_password): ?>
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid #ef4444; color: #fca5a5; padding: 12px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 1rem; line-height: 1.5; font-weight: 600;">
+                ⚠️ <strong>CẢNH BÁO BẢO MẬT:</strong> Bạn đang sử dụng mật khẩu mặc định (<code>admin123</code>). Vui lòng đổi mật khẩu mới để tiếp tục sử dụng hệ thống!
+            </div>
+            <?php else: ?>
             <p style="font-size:0.8rem; color: var(--text-dim); margin-bottom: 1rem;">Mật khẩu được mã hóa bcrypt. Tối thiểu 6 ký tự.</p>
+            <?php endif; ?>
             <input type="password" id="pw-current" placeholder="Mật khẩu hiện tại" class="admin-modal-input" style="margin-bottom: 0.7rem;">
-            <input type="password" id="pw-new" placeholder="Mật khẩu mới" class="admin-modal-input" style="margin-bottom: 0.7rem;">
+            <input type="password" id="pw-new" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" class="admin-modal-input" style="margin-bottom: 0.7rem;">
             <input type="password" id="pw-confirm" placeholder="Xác nhận mật khẩu mới" class="admin-modal-input">
         </div>
         <div class="admin-modal-footer">
+            <?php if (!$is_default_password): ?>
             <button class="admin-modal-btn admin-modal-cancel" onclick="closeModal('password-modal')">Hủy</button>
-            <button class="admin-modal-btn admin-modal-save" onclick="changePassword()">🔒 Đổi mật khẩu</button>
+            <?php endif; ?>
+            <button class="admin-modal-btn admin-modal-save" onclick="changePassword()" style="width: 100%;">🔒 Đổi mật khẩu ngay</button>
         </div>
     </div>
 </div>
@@ -1322,7 +1332,13 @@ function buildQuery($overrides = []) {
 const BASE_URL = '<?php echo $display_base; ?>';
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeModal(id) { 
+    if (id === 'password-modal') {
+        const pModal = document.getElementById('password-modal');
+        if (pModal && pModal.hasAttribute('data-force-change')) return;
+    }
+    document.getElementById(id).style.display = 'none'; 
+}
 function openPasswordModal() { openModal('password-modal'); document.getElementById('pw-current').focus(); }
 
 let currentUploadTarget = '';
@@ -1577,7 +1593,21 @@ function showToast(msg, isError = false) {
     setTimeout(() => { t.className = 'admin-toast'; }, 3000);
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('edit-modal'); closeModal('password-modal'); }});
+document.addEventListener('keydown', e => { 
+    if (e.key === 'Escape') { 
+        closeModal('edit-modal'); 
+        const pModal = document.getElementById('password-modal');
+        if (pModal && !pModal.hasAttribute('data-force-change')) {
+            closeModal('password-modal');
+        }
+    }
+});
+
+<?php if ($is_default_password): ?>
+document.addEventListener('DOMContentLoaded', () => {
+    openPasswordModal();
+});
+<?php endif; ?>
 </script>
 
 <?php endif; ?>
